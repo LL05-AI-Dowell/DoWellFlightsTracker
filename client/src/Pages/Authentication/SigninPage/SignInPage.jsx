@@ -44,7 +44,7 @@ const SignInPage = () => {
         <div className="mt-3 text-center">
           <p className="text-sm">
             Don't have an account?{" "}
-            <a href="#" className="text-blue-600">
+            <a href="/signup" className="text-blue-600">
               Register
             </a>
           </p>

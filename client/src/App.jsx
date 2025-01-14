@@ -5,6 +5,7 @@ import SignInPage from "./Pages/Authentication/SigninPage/SignInPage";
 import SignupPage from "./Pages/Authentication/SignupPage/SignUpPage";
 import HomePage from "./Pages/Home/HomePage";
 import WelcomePage from "./Pages/Welcome/WelcomePage";
+import FlightTrackerPage from "./Pages/FlightTrackerPrage/FlightTrackerPage";
 
 const App = () => {
   return (
@@ -14,10 +15,11 @@ const App = () => {
         <Route path="/" element={<WelcomePage />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignupPage />} />
+        <Route path="/flighttracking" element={<FlightTrackerPage />} />
+
         <Route path="dashboard" element={<DashboardPage />}>
           <Route index element={<HomePage />} />
         </Route>
-
       </Routes>
     </>
   );
