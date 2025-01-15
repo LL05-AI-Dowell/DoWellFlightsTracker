@@ -10,6 +10,7 @@ from config.config import *
 from .serializers import *
 from .utils.helper import *
 from .services.datacube import *
+from .services.sendEmail import *
 
 jwt_utils = JWTUtils()
 @method_decorator(csrf_exempt, name='dispatch')
@@ -33,6 +34,13 @@ class UserManagement(APIView):
             return self.signin(request)
         elif type == 'signup':
             return self.signup(request)
+        else:
+            return self.handle_error(request)
+        
+    def get(self, request):
+        type = request.GET.get('type')
+        if type == 'self_identification':
+            return self.self_identification(request)
         else:
             return self.handle_error(request)
         
@@ -121,6 +129,7 @@ class UserManagement(APIView):
                 "is_active": True,
                 "is_notification_active": False,
                 "notification_duration": "one_day",
+                "product_url": url,
                 "qrcode_image_url": qrcode_image_url,
                 "proximity": 25,
                 "created_at": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
@@ -219,14 +228,132 @@ class UserManagement(APIView):
             False
         ))
 
-        data = user_data_response.get("data", [])
+        if not user_data_response["data"]:
+            return Response({
+                "success": False,
+                "message": "Please enter valid user ID"
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        existing_email = user_data_response["data"][0]["email"]
 
+        if existing_email == "":
+            user_update = json.loads(datacube_data_update(
+                api_key,
+                f"{response['response'][0]['userinfo']['owner_id']}_dowell_flight_tracker",
+                f"{response['response'][0]['userinfo']['owner_id']}_users",
+                {"_id": user_data_response["data"][0]["_id"]},
+                {
+                    "email": email,
+                    "latitude": latitude,
+                    "longitude": longitude,
+                }
+            ))
+
+            if not user_update["success"]:
+                return Response({
+                    "success": False,
+                    "message": "Failed to update email"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            print("here i am updating...")
+            # Manually update the email in local data
+            existing_email = email
+
+        # Check if email exists and doesn't match
+        if existing_email != email:
+            print("here i am email didn't match...")
+            return Response({
+                "success": False,
+                "message": "This account is registered with another user. If you want to claim this account, contact us at dowell@dowellresearch.sg"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # If email matches, proceed to send the email
+        print("here i am same email...")
+
+        try:
+            data_response = json.loads(datacube_data_retrieval(
+                api_key,
+                f"{response['response'][0]['userinfo']['owner_id']}_dowell_flight_tracker",
+                f"{response['response'][0]['userinfo']['owner_id']}_users",
+                {"user_id": user_id},
+                1,
+                0,
+                False
+            ))
+
+            if not data_response["data"]:
+                return Response({
+                    "success": False,
+                    "message": "Something went wrong, please contact us at dowell@dowellresearch.sg"
+                }, status=status.HTTP_404_NOT_FOUND)
+
+            portfolio_details = data_response["data"][0]
+            customer_id = portfolio_details["customer_id"]
+            product_id = workspace_name
+            password = portfolio_details["password"]
+
+            # Send email with user details
+            response_send_email = json.loads(send_email(
+                toname=email,
+                toemail=email,
+                customer_id=customer_id,
+                product_id=product_id,
+                user_id=user_id,
+                password=password,
+                help_link="https://youtube.com/shorts/FmqMJJf7ei0?feature=share",
+                direct_login_link=f"{config['FRONTEND_URL']}/?workspace_name={product_id}&user_id={user_id}&password={password}"
+            ))
+
+            if not response_send_email["success"]:
+                return Response({
+                    "success": False,
+                    "message": "Failed to send email, please try again"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            return Response({
+                "success": True,
+                "message": "Email sent successfully"
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response({
+                "success": False,
+                "message": "Something went wrong with your registration process, please contact us at dowell@dowellresearch.sg"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    @login_required
+    def self_identification(self, request):
+        document_id = request.GET.get('document_id')
+        workspace_id = request.GET.get('workspace_id')
+
+        if not document_id or not workspace_id:
+            return Response({
+                "success": False,
+                "message": "Missing user_id or workspace_id"
+            }, status=status.HTTP_400_BAD_REQUEST)
+        response = json.loads(datacube_data_retrieval(
+            api_key,
+            f"{workspace_id}_dowell_flight_tracker",
+            f"{workspace_id}_users",
+            {
+                "_id": document_id
+            },
+            1,
+            0,
+            False
+        ))
+
+        if not response["data"]:
+            return Response({
+                "success": False,
+                "message": "User not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        
         return Response({
             "success": True,
-            "message": "Email sent successfully",
-            "response": data
-        })
-
+            "message": "User found",
+            "response": response["data"][0]
+        },status=status.HTTP_302_FOUND)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class flight_data(APIView):
@@ -249,7 +376,8 @@ class flight_data(APIView):
             return self.get_airlines(request)
         else:
             return self.handle_error(request)
-        
+
+     
     def get_airports(self, request):
         res = get_fligts_data('airports',config["FLIGHT_SERVICE_APP_ID"],config["FLIGHT_SERVICE_APP_KEY"])
 
