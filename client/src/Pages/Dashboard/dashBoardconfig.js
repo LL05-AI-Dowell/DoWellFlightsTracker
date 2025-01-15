@@ -1,7 +1,6 @@
 import { 
     FaHome, 
-    FaChartBar, 
-    FaCog, 
+    FaChartBar,
     FaUser 
   } from "react-icons/fa";
   
@@ -13,8 +12,7 @@ import {
     },
     generalItems: [
       { label: "Dashboard", icon: FaHome, path: "/dashboard", sublabels: [] },
-      { label: "Report", icon: FaChartBar, path: "/dashboard/product", sublabels: [] },
-      { label: "Setting", icon: FaCog, path: "/dashboard/contactus", sublabels: [] },
+      { label: "Report", icon: FaChartBar, path: "/dashboard/report", sublabels: [] },
       { label: "User Profile", icon: FaUser, path: "/dashboard/userprofile", sublabels: [] }
     ],
     settingItems: []

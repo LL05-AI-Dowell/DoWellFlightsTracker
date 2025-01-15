@@ -8,6 +8,7 @@ import WelcomePage from "./Pages/Welcome/WelcomePage";
 import FlightTrackerPage from "./Pages/FlightTrackerPrage/FlightTrackerPage";
 import FlightTrackerPageMobileView from "./Pages/MobileView/FlightTrackerPageMobileView";
 import UserProfilePage from "./Pages/UserProfile/UserProfilePage";
+import ReportPage from './Pages/Report/ReportPage';
 
 const App = () => {
   return (
@@ -18,13 +19,15 @@ const App = () => {
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dowellflighttracker" element={<FlightTrackerPage />} />
-        <Route path="/dowellflighttrackermobileview" element={<FlightTrackerPageMobileView />} />
-
+        <Route
+          path="/dowellflighttrackermobileview"
+          element={<FlightTrackerPageMobileView />}
+        />
 
         <Route path="dashboard" element={<DashboardPage />}>
           <Route index element={<HomePage />} />
-        <Route path="/userprofile" element={<UserProfilePage />} />
-
+          <Route path="userprofile" element={<UserProfilePage />} />
+          <Route path="report" element={<ReportPage />} />
         </Route>
       </Routes>
     </>
