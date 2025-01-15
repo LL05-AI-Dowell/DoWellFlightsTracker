@@ -42,7 +42,6 @@ export const AppProvider = ({ children }) => {
         setSearchRadius,
         currentPage,
         setCurrentPage,
-      
         dateTime,
         setDateTime,
         typeOfStatus,
