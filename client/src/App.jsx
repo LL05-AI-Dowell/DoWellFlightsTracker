@@ -19,7 +19,6 @@ const App = () => {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dowellflighttracker" element={<FlightTrackerPage />} />
         <Route path="/dowellflighttrackermobileview" element={<FlightTrackerPageMobileView />} />
-        <Route path="/flighttracking" element={<FlightTrackerPage />} />
         <Route path="/userprofile" element={<UserProfilePage />} />
 
 
