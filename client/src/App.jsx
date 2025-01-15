@@ -7,6 +7,7 @@ import HomePage from "./Pages/Home/HomePage";
 import WelcomePage from "./Pages/Welcome/WelcomePage";
 import FlightTrackerPage from "./Pages/FlightTrackerPrage/FlightTrackerPage";
 import FlightTrackerPageMobileView from "./Pages/MobileView/FlightTrackerPageMobileView";
+import UserProfilePage from "./Pages/UserProfile/UserProfilePage";
 
 const App = () => {
   return (
@@ -18,6 +19,9 @@ const App = () => {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/dowellflighttracker" element={<FlightTrackerPage />} />
         <Route path="/dowellflighttrackermobileview" element={<FlightTrackerPageMobileView />} />
+        <Route path="/flighttracking" element={<FlightTrackerPage />} />
+        <Route path="/userprofile" element={<UserProfilePage />} />
+
 
         <Route path="dashboard" element={<DashboardPage />}>
           <Route index element={<HomePage />} />
