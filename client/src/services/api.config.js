@@ -13,3 +13,23 @@ export const fetchFlightsApi = async (params) => {
     const response = await tempAxiosInstance.post('/api/fligts/?type=get_flights_arrival_departure' , params )
     return response.data
 }
+
+export const SignIn = async (data) => {
+    const response = await servicesAxiosInstance.post(
+      "/api/v1/auth/?type=signin",
+      data
+    );
+    return response.data;
+  };
+  
+  export const selfidentification = async (token, workspaceId, documentId) => {
+    const headers = {
+      Authorization: `Bearer ${token}`,
+    };
+    const response = await servicesAxiosInstance.get(
+      `api/v1/auth/?type=self_identification&document_id=${documentId}&workspace_id=${workspaceId}`,
+      { token, workspaceId, documentId },
+      { headers }
+    );
+    return response;
+  };

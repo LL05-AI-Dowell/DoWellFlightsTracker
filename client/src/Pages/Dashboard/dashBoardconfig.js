@@ -15,7 +15,7 @@ import {
       { label: "Dashboard", icon: FaHome, path: "/dashboard", sublabels: [] },
       { label: "Report", icon: FaChartBar, path: "/dashboard/product", sublabels: [] },
       { label: "Setting", icon: FaCog, path: "/dashboard/contactus", sublabels: [] },
-      { label: "User Profile", icon: FaUser, path: "/dashboard/support", sublabels: [] }
+      { label: "User Profile", icon: FaUser, path: "/dashboard/userprofile", sublabels: [] }
     ],
     settingItems: []
   };
