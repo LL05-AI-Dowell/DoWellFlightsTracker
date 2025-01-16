@@ -1,6 +1,7 @@
-/* eslint-disable react/no-unescaped-entities */
-import { useState, useEffect } from 'react';
-import { Shield, ShieldAlert, RefreshCw } from 'lucide-react';
+// Frontend: SignInPage.jsx
+import { useState, useEffect } from "react";
+import { Shield, ShieldAlert, RefreshCw } from "lucide-react";
+import { SignIn } from "../../../services/api.config.js";
 
 const SignInPage = () => {
   const [loading, setLoading] = useState(false);
@@ -9,14 +10,15 @@ const SignInPage = () => {
     lastChecked: null,
   });
   const [formData, setFormData] = useState({
-    workspace_name: '',
-    portfolio: '',
-    password: ''
+    workspace_name: "",
+    portfolio: "",
+    password: "",
   });
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
   const [showOverlay, setShowOverlay] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [apiError, setApiError] = useState("");
 
   useEffect(() => {
     checkServerHealth();
@@ -27,16 +29,29 @@ const SignInPage = () => {
   const checkServerHealth = async () => {
     setIsChecking(true);
     try {
-      const response = await fetch('/api/health');
+      const response = await fetch("/api/v1/auth/?type=signin", {
+        method: "GET",
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+        cache: "no-store",
+      });
+
       const data = await response.json();
+
       setHealthStatus({
-        status: data.success ? 'healthy' : 'unhealthy',
+        status: data.status === "healthy" ? "healthy" : "unhealthy",
         lastChecked: new Date(),
+        message: data.message,
       });
     } catch (error) {
+      console.error("Health check failed:", error);
       setHealthStatus({
-        status: 'unhealthy',
+        status: "unhealthy",
         lastChecked: new Date(),
+        // message: "Service unavailable",
       });
     } finally {
       setIsChecking(false);
@@ -45,17 +60,17 @@ const SignInPage = () => {
 
   const validateForm = () => {
     const newErrors = {};
-    
+
     if (!formData.workspace_name.trim()) {
-      newErrors.workspace_name = 'Product ID is required';
+      newErrors.workspace_name = "Product ID is required";
     }
-    
+
     if (!formData.portfolio.trim()) {
-      newErrors.portfolio = 'User ID is required';
+      newErrors.portfolio = "User ID is required";
     }
-    
+
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     }
 
     setErrors(newErrors);
@@ -64,35 +79,42 @@ const SignInPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
 
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
+    }
+    if (apiError) {
+      setApiError("");
     }
   };
 
   const handleBlur = (e) => {
     const { name } = e.target;
-    setTouched(prev => ({
+    setTouched((prev) => ({
       ...prev,
-      [name]: true
+      [name]: true,
     }));
     validateForm();
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    const allTouched = Object.keys(formData).reduce((acc, key) => ({
-      ...acc,
-      [key]: true
-    }), {});
+    setApiError("");
+
+    const allTouched = Object.keys(formData).reduce(
+      (acc, key) => ({
+        ...acc,
+        [key]: true,
+      }),
+      {}
+    );
     setTouched(allTouched);
 
     if (!validateForm()) {
@@ -101,17 +123,31 @@ const SignInPage = () => {
 
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('Login successful', formData);
+      const response = await SignIn({
+        workspace_name: formData.workspace_name,
+        portfolio: formData.portfolio,
+        password: formData.password,
+      });
+
+      if (response?.token) {
+        localStorage.setItem("token", response.token);
+        window.location.href = "/dashboard";
+      } else {
+        setApiError("Invalid response from server");
+      }
     } catch (error) {
-      console.error('Login failed:', error);
+      console.error("Login failed:", error);
+      setApiError(
+        error.response?.data?.message ||
+          "Login failed. Please check your credentials and try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   const toggleOverlay = () => {
-    setShowOverlay(prev => !prev);
+    setShowOverlay((prev) => !prev);
   };
 
   return (
@@ -121,27 +157,34 @@ const SignInPage = () => {
           <button
             onClick={checkServerHealth}
             className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl ${
-              healthStatus.status === 'healthy' 
-                ? 'bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600' 
-                : 'bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600'
+              healthStatus.status === "healthy"
+                ? "bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600"
+                : "bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600"
             }`}
           >
             <div className="relative">
-              {healthStatus.status === 'healthy' ? (
+              {healthStatus.status === "healthy" ? (
                 <Shield className="w-5 h-5 text-white" />
               ) : (
                 <ShieldAlert className="w-5 h-5 text-white" />
               )}
-              <RefreshCw 
+              <RefreshCw
                 className={`absolute top-0 left-0 w-5 h-5 text-white opacity-0 transition-all duration-300 ${
-                  isChecking ? 'animate-spin opacity-100' : ''
+                  isChecking ? "animate-spin opacity-100" : ""
                 }`}
               />
             </div>
             <span className="text-white font-medium">
-              {healthStatus.status === 'healthy' ? 'System Healthy' : 'System Error'}
+              {healthStatus.status === "healthy"
+                ? "System Healthy"
+                : "System Error"}
             </span>
           </button>
+          {healthStatus.message && (
+            <div className="absolute top-full mt-2 right-0 bg-white p-2 rounded shadow-lg text-sm">
+              {healthStatus.message}
+            </div>
+          )}
         </div>
       </div>
 
@@ -154,6 +197,12 @@ const SignInPage = () => {
           />
         </div>
 
+        {apiError && (
+          <div className="w-full mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
+            <p className="text-red-800 text-sm">{apiError}</p>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="w-full space-y-4">
           <div className="space-y-1">
             <input
@@ -164,9 +213,9 @@ const SignInPage = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                errors.workspace_name && touched.workspace_name 
-                  ? 'border-red-500 focus:ring-red-200' 
-                  : 'border-gray-300 focus:ring-blue-200'
+                errors.workspace_name && touched.workspace_name
+                  ? "border-red-500 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-blue-200"
               }`}
             />
             {errors.workspace_name && touched.workspace_name && (
@@ -183,9 +232,9 @@ const SignInPage = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                errors.portfolio && touched.portfolio 
-                  ? 'border-red-500 focus:ring-red-200' 
-                  : 'border-gray-300 focus:ring-blue-200'
+                errors.portfolio && touched.portfolio
+                  ? "border-red-500 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-blue-200"
               }`}
             />
             {errors.portfolio && touched.portfolio && (
@@ -202,9 +251,9 @@ const SignInPage = () => {
               onChange={handleChange}
               onBlur={handleBlur}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                errors.password && touched.password 
-                  ? 'border-red-500 focus:ring-red-200' 
-                  : 'border-gray-300 focus:ring-blue-200'
+                errors.password && touched.password
+                  ? "border-red-500 focus:ring-red-200"
+                  : "border-gray-300 focus:ring-blue-200"
               }`}
             />
             {errors.password && touched.password && (
@@ -224,18 +273,18 @@ const SignInPage = () => {
               type="submit"
               disabled={loading}
               className={`w-1/2 px-3 py-2 rounded transition-colors ${
-                loading 
-                  ? 'bg-blue-400 cursor-not-allowed' 
-                  : 'bg-blue-600 hover:bg-blue-700'
+                loading
+                  ? "bg-blue-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
               } text-white`}
             >
-              {loading ? 'Loading...' : 'Login'}
+              {loading ? "Loading..." : "Login"}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm">
-              Don't have an account?{' '}
+              Don't have an account?{" "}
               <a href="/signup" className="text-blue-600 hover:underline">
                 Register
               </a>
