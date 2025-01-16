@@ -1,153 +1,78 @@
-// Frontend: SignInPage.jsx
-import { useState, useEffect } from "react";
 import { Shield, ShieldAlert, RefreshCw } from "lucide-react";
-import { SignIn } from "../../../services/api.config.js";
+import { useEffect, useState } from "react";
+import { getServerHealth, SignIn } from "../../../services/api.config"; // Assuming loginUser is the API call
+import { toast } from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const SignInPage = () => {
-  const [loading, setLoading] = useState(false);
   const [healthStatus, setHealthStatus] = useState({
-    status: null,
-    lastChecked: null,
+    isHealthy: false,
+    message: "Checking system status...",
   });
+  const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    workspace_name: "",
-    portfolio: "",
+    workspaceName: "",
+    userId: "",
     password: "",
   });
-  const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-  const [showOverlay, setShowOverlay] = useState(false);
-  const [isChecking, setIsChecking] = useState(false);
-  const [apiError, setApiError] = useState("");
+
+  const navigate = useNavigate()
+
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
-    checkServerHealth();
-    const interval = setInterval(checkServerHealth, 30000);
-    return () => clearInterval(interval);
+    const fetchServerHealth = async () => {
+      try {
+        const response = await getServerHealth();
+        if (response.success) {
+          setHealthStatus({ isHealthy: true, message: "System is healthy." });
+        } else {
+          setHealthStatus({ isHealthy: false, message: "System is unhealthy." });
+        }
+      } catch (error) {
+        console.error("Error fetching server health:", error);
+        setHealthStatus({ isHealthy: false, message: "Failed to check system status." });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServerHealth();
   }, []);
 
-  const checkServerHealth = async () => {
-    setIsChecking(true);
-    try {
-      const response = await fetch("/api/v1/auth/?type=signin", {
-        method: "GET",
-        headers: {
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-          Pragma: "no-cache",
-          Expires: "0",
-        },
-        cache: "no-store",
-      });
-
-      const data = await response.json();
-
-      setHealthStatus({
-        status: data.status === "healthy" ? "healthy" : "unhealthy",
-        lastChecked: new Date(),
-        message: data.message,
-      });
-    } catch (error) {
-      console.error("Health check failed:", error);
-      setHealthStatus({
-        status: "unhealthy",
-        lastChecked: new Date(),
-        // message: "Service unavailable",
-      });
-    } finally {
-      setIsChecking(false);
-    }
-  };
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.workspace_name.trim()) {
-      newErrors.workspace_name = "Product ID is required";
-    }
-
-    if (!formData.portfolio.trim()) {
-      newErrors.portfolio = "User ID is required";
-    }
-
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-
-    if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
-    }
-    if (apiError) {
-      setApiError("");
-    }
-  };
-
-  const handleBlur = (e) => {
-    const { name } = e.target;
-    setTouched((prev) => ({
-      ...prev,
-      [name]: true,
-    }));
-    validateForm();
+    setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setApiError("");
+    e.preventDefault(); 
+    setIsLoggingIn(true); 
 
-    const allTouched = Object.keys(formData).reduce(
-      (acc, key) => ({
-        ...acc,
-        [key]: true,
-      }),
-      {}
-    );
-    setTouched(allTouched);
-
-    if (!validateForm()) {
-      return;
-    }
-
-    setLoading(true);
     try {
-      const response = await SignIn({
-        workspace_name: formData.workspace_name,
-        portfolio: formData.portfolio,
-        password: formData.password,
-      });
+      
+      const response = await SignIn(formData);
 
-      if (response?.token) {
-        localStorage.setItem("token", response.token);
-        window.location.href = "/dashboard";
+      if (response.success) {
+        if (response.response.is_active){
+          // store access token
+          localStorage.setItem('accessToken', response.access_token);
+          // store refresh token
+          localStorage.setItem('refreshToken', response.refresh_token);
+          toast.success("Login successful")
+          // Redirect to dashboard page
+          navigate('/dashboard');
+        } else{
+          toast.error("Account is inactive, please contact administrator")
+        }
+        
       } else {
-        setApiError("Invalid response from server");
+        toast.error("Failed to Login successful")
       }
     } catch (error) {
-      console.error("Login failed:", error);
-      setApiError(
-        error.response?.data?.message ||
-          "Login failed. Please check your credentials and try again."
-      );
+      console.error("Error during login:", error);
     } finally {
-      setLoading(false);
+      setIsLoggingIn(false);
     }
-  };
-
-  const toggleOverlay = () => {
-    setShowOverlay((prev) => !prev);
   };
 
   return (
@@ -155,36 +80,29 @@ const SignInPage = () => {
       <div className="absolute right-4 top-4">
         <div className="group relative">
           <button
-            onClick={checkServerHealth}
             className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-lg transition-all duration-300 hover:shadow-xl ${
-              healthStatus.status === "healthy"
+              healthStatus.isHealthy
                 ? "bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-600"
                 : "bg-gradient-to-r from-red-400 to-red-500 hover:from-red-500 hover:to-red-600"
             }`}
           >
             <div className="relative">
-              {healthStatus.status === "healthy" ? (
+              {isLoading ? (
+                <RefreshCw className="w-5 h-5 text-white animate-spin" />
+              ) : healthStatus.isHealthy ? (
                 <Shield className="w-5 h-5 text-white" />
               ) : (
                 <ShieldAlert className="w-5 h-5 text-white" />
               )}
-              <RefreshCw
-                className={`absolute top-0 left-0 w-5 h-5 text-white opacity-0 transition-all duration-300 ${
-                  isChecking ? "animate-spin opacity-100" : ""
-                }`}
-              />
             </div>
             <span className="text-white font-medium">
-              {healthStatus.status === "healthy"
+              {isLoading
+                ? "Checking..."
+                : healthStatus.isHealthy
                 ? "System Healthy"
                 : "System Error"}
             </span>
           </button>
-          {healthStatus.message && (
-            <div className="absolute top-full mt-2 right-0 bg-white p-2 rounded shadow-lg text-sm">
-              {healthStatus.message}
-            </div>
-          )}
         </div>
       </div>
 
@@ -197,94 +115,61 @@ const SignInPage = () => {
           />
         </div>
 
-        {apiError && (
-          <div className="w-full mb-4 p-4 rounded-lg bg-red-50 border border-red-200">
-            <p className="text-red-800 text-sm">{apiError}</p>
-          </div>
-        )}
-
         <form onSubmit={handleSubmit} className="w-full space-y-4">
           <div className="space-y-1">
             <input
+              onChange={handleChange}
               type="text"
-              name="workspace_name"
+              name="workspaceName"
+              value={formData.workspaceName}
               placeholder="Enter Product ID"
-              value={formData.workspace_name}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                errors.workspace_name && touched.workspace_name
-                  ? "border-red-500 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
-              }`}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-200"
             />
-            {errors.workspace_name && touched.workspace_name && (
-              <p className="text-red-500 text-sm">{errors.workspace_name}</p>
-            )}
           </div>
 
           <div className="space-y-1">
             <input
+              onChange={handleChange}
               type="text"
-              name="portfolio"
+              name="userId"
+              value={formData.userId}
               placeholder="Enter User ID"
-              value={formData.portfolio}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                errors.portfolio && touched.portfolio
-                  ? "border-red-500 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
-              }`}
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-200"
             />
-            {errors.portfolio && touched.portfolio && (
-              <p className="text-red-500 text-sm">{errors.portfolio}</p>
-            )}
           </div>
 
           <div className="space-y-1">
             <input
+              onChange={handleChange}
               type="password"
               name="password"
-              placeholder="Enter password"
               value={formData.password}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 ${
-                errors.password && touched.password
-                  ? "border-red-500 focus:ring-red-200"
-                  : "border-gray-300 focus:ring-blue-200"
-              }`}
+              placeholder="Enter password"
+              className="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 border-gray-300 focus:ring-blue-200"
             />
-            {errors.password && touched.password && (
-              <p className="text-red-500 text-sm">{errors.password}</p>
-            )}
           </div>
 
           <div className="flex space-x-3">
             <button
               type="button"
-              onClick={toggleOverlay}
               className="w-1/2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={isLoggingIn}
               className={`w-1/2 px-3 py-2 rounded transition-colors ${
-                loading
-                  ? "bg-blue-400 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
+                isLoggingIn ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"
               } text-white`}
             >
-              {loading ? "Loading..." : "Login"}
+              {isLoggingIn ? "Logging In..." : "Login"}
             </button>
           </div>
 
           <div className="text-center">
             <p className="text-sm">
-              Don't have an account?{" "}
+              Dont have an account?{" "}
               <a href="/signup" className="text-blue-600 hover:underline">
                 Register
               </a>
@@ -293,7 +178,6 @@ const SignInPage = () => {
 
           <button
             type="button"
-            onClick={toggleOverlay}
             className="w-32 mx-auto px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md transition-colors text-center block"
           >
             Help

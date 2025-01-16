@@ -1,19 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { dashboardConfig } from "./dashBoardConfig";
-// import { isTokenExpired } from '../../utils/utils';
+import { isTokenExpired } from '../../utils/utils';
 
 const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openSubmenus, setOpenSubmenus] = useState({});
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem('accessToken');
-  //   if (!token || isTokenExpired(token)) {
-  //     navigate('/');
-  //   }
-  // }, [navigate]);
+  useEffect(() => {
+    const token = localStorage.getItem('accessToken');
+    if (!token || isTokenExpired(token)) {
+      navigate('/signin');
+    }
+  }, [navigate]);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen((prev) => !prev);
@@ -27,8 +27,8 @@ const Dashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    navigate('/');
+    localStorage.clear();
+    navigate('/signin');
   };
 
   return (

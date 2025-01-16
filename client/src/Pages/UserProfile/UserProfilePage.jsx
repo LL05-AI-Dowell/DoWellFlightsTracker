@@ -1,43 +1,56 @@
-import React, { useEffect, useState, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { 
-  RefreshCcw, 
-  XCircle, 
-  User, 
-  Bell, 
-  MapPin, 
-  Link as LinkIcon, 
+  User,
   Mail, 
-  Briefcase, 
+  Briefcase,
   Database,
   Key,
   Hash,
-  QrCode,
+  MapPin,
   BellRing,
-  Upload,
+  Link as LinkIcon,
+  QrCode,
   Camera,
-  Edit2
+  Edit2,
+  Bell,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react';
-import { selfidentification } from '../../services/userprofileapi.js';
+import { decodeJWT } from '../../utils/utils';
+import { selfidentification } from '../../services/api.config';
 
-const UserProfile = () => {
+function UserProfile() {
   const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [previewImage, setPreviewImage] = useState(null);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingProximity, setIsEditingProximity] = useState(false);
   const [emailValue, setEmailValue] = useState('');
-  const fileInputRef = useRef(null);
+  const [proximityValue, setProximityValue] = useState('');
+  const [previewImage, setPreviewImage] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const loadProfile = async () => {
     setLoading(true);
-    setError(null);
-    
     try {
-      const response = await selfidentification("test-token", "workspace-123", "doc-123");
-      setData(response.data);
-      setEmailValue(response.data.email || '');
+      const decodedToken = await decodeJWT(localStorage.getItem('accessToken'));
+      if (!decodedToken) {
+        throw new Error('Invalid access token');
+      }
+
+      const response = await selfidentification(
+        localStorage.getItem('accessToken'),
+        decodedToken.workspace_id,
+        decodedToken._id
+      );
+
+      if (response.success) {
+        setData(response.response);
+        setEmailValue(response.response.email || '');
+        setProximityValue(response.response.proximity?.toString() || '');
+      } else {
+        throw new Error('Failed to fetch profile');
+      }
     } catch (err) {
-      setError(err.message);
+      console.error('Error fetching profile:', err.message);
     } finally {
       setLoading(false);
     }
@@ -47,277 +60,350 @@ const UserProfile = () => {
     loadProfile();
   }, []);
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreviewImage(reader.result);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
-  };
-
-  const maskPassword = (password) => {
-    return password ? '•'.repeat(12) : 'Not Set';
-  };
-
-  const handleEmailEdit = () => {
-    setIsEditingEmail(true);
-  };
-
-  const handleEmailSave = async () => {
-    // Here you would typically make an API call to save the email
-    // For now, we'll just update the local state
-    setData(prev => ({ ...prev, email: emailValue }));
-    setIsEditingEmail(false);
-  };
-
-  const handleEmailCancel = () => {
-    setEmailValue(data.email || '');
-    setIsEditingEmail(false);
-  };
-
-  const handleDurationChange = (e) => {
-    // Here you would typically make an API call to save the duration
-    // For now, we'll just update the local state
-    setData(prev => ({ ...prev, notification_duration: e.target.value }));
-  };
-
-  if (loading) {
+  if (loading || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white p-4">
-        <div className="max-w-md w-full bg-red-50 border-l-4 border-red-500 p-4 rounded">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <XCircle className="h-5 w-5 text-red-500" />
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Error Loading Profile
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>{error}</p>
-              </div>
-              <button
-                onClick={loadProfile}
-                className="mt-3 flex items-center text-sm text-red-800 hover:text-red-600"
-              >
-                <RefreshCcw className="h-4 w-4 mr-1" />
-                Try again
-              </button>
-            </div>
-          </div>
+  const InfoCard = ({ icon: Icon, label, value, subValue }) => (
+    <div className="bg-white p-4 rounded-lg border border-gray-100 hover:border-blue-100 transition-colors">
+      <div className="flex items-start gap-3">
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <Icon className="w-5 h-5 text-blue-500" />
         </div>
-      </div>
-    );
-  }
-
-  const EmailItem = () => (
-    <div className="flex items-start gap-3">
-      <div className="w-5 h-5 flex-shrink-0 mt-1">
-        <Mail className="text-blue-500" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-gray-500">Email</p>
-        {isEditingEmail ? (
-          <div className="flex items-center gap-2 mt-1">
-            <input
-              type="email"
-              value={emailValue}
-              onChange={(e) => setEmailValue(e.target.value)}
-              className="block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-            <button
-              onClick={handleEmailSave}
-              className="px-3 py-1.5 text-sm text-white bg-blue-500 rounded hover:bg-blue-600"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleEmailCancel}
-              className="px-3 py-1.5 text-sm text-gray-600 bg-gray-100 rounded hover:bg-gray-200"
-            >
-              Cancel
-            </button>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <p className="font-medium text-gray-900 break-words">
-              {data.email || "Not provided"}
-            </p>
-            <button
-              onClick={handleEmailEdit}
-              className="p-1 text-gray-400 hover:text-blue-500"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const NotificationDurationItem = () => (
-    <div className="flex items-start gap-3">
-      <div className="w-5 h-5 flex-shrink-0 mt-1">
-        <Bell className="text-blue-500" />
-      </div>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm text-gray-500">Notification Duration</p>
-        <div className="relative mt-1">
-          <select
-            value={data.notification_duration}
-            onChange={handleDurationChange}
-            className="appearance-none w-full bg-white border border-gray-300 rounded-lg pl-4 pr-10 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer hover:border-gray-400 transition-colors"
-          >
-            <option value="1 day">One Day</option>
-            <option value="7 days">Seven Days</option>
-            <option value="30 days">One Month</option>
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <svg 
-              className="h-5 w-5 text-gray-400" 
-              xmlns="http://www.w3.org/2000/svg" 
-              viewBox="0 0 20 20" 
-              fill="currentColor"
-            >
-              <path 
-                fillRule="evenodd" 
-                d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" 
-                clipRule="evenodd" 
-              />
-            </svg>
-          </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-gray-500">{label}</p>
+          <p className="mt-1 font-medium text-gray-900 break-words">{value}</p>
+          {subValue && (
+            <p className="mt-1 text-sm text-gray-500">{subValue}</p>
+          )}
         </div>
       </div>
     </div>
   );
+
+  const handleEmailSave = async () => {
+    try {
+      // Here you would typically make an API call to update the email
+      setData(prev => ({ ...prev, email: emailValue }));
+      setIsEditingEmail(false);
+    } catch (error) {
+      console.error('Error updating email:', error);
+      // Handle error appropriately
+    }
+  };
+
+  const handleEmailCancel = () => {
+    setEmailValue(data.email);
+    setIsEditingEmail(false);
+  };
+
+  const handleProximitySave = async () => {
+    try {
+      const proximityNum = parseFloat(proximityValue);
+      if (isNaN(proximityNum)) {
+        throw new Error('Invalid proximity value');
+      }
+      // Here you would typically make an API call to update the proximity
+      setData(prev => ({ ...prev, proximity: proximityNum }));
+      setIsEditingProximity(false);
+    } catch (error) {
+      console.error('Error updating proximity:', error);
+      // Handle error appropriately
+    }
+  };
+
+  const handleProximityCancel = () => {
+    setProximityValue(data.proximity?.toString() || '');
+    setIsEditingProximity(false);
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviewImage(reader.result);
+          // Here you would typically make an API call to upload the image
+          // and update the profile_image URL in the data state
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        // Handle error appropriately
+      }
+    }
+  };
+
+  const handleNotificationToggle = async () => {
+    try {
+      // Here you would typically make an API call to update the notification status
+      setData(prev => ({
+        ...prev,
+        is_notification_active: !prev.is_notification_active
+      }));
+    } catch (error) {
+      console.error('Error updating notification status:', error);
+      // Handle error appropriately
+    }
+  };
+
+  const handleDurationChange = async (event) => {
+    try {
+      // Here you would typically make an API call to update the notification duration
+      setData(prev => ({
+        ...prev,
+        notification_duration: event.target.value
+      }));
+    } catch (error) {
+      console.error('Error updating notification duration:', error);
+      // Handle error appropriately
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-xl shadow-sm">
-          <div className="flex flex-col items-center p-8">
-            {/* Profile Image Section */}
-            <div className="relative group mb-4">
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-              />
-              {previewImage || data.profile_image ? (
-                <div className="relative">
-                  <img 
-                    src={previewImage || data.profile_image} 
-                    alt="Profile" 
-                    className="w-24 h-24 rounded-full object-cover"
-                  />
-                  <button
-                    onClick={triggerFileInput}
-                    className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                  >
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header Section */}
+        <div className="overflow-hidden">
+          <div className="relative h-32">
+            <div className="absolute -bottom-16 left-8">
+              <div className="relative group">
+                <div className="w-32 h-32 rounded-2xl bg-white p-1">
+                  {previewImage || data.profile_image ? (
+                    <img 
+                      src={previewImage || data.profile_image}
+                      alt="Profile"
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  ) : (
+                    <div className="w-full h-full rounded-xl bg-blue-50 flex items-center justify-center">
+                      <User className="w-12 h-12 text-blue-500" />
+                    </div>
+                  )}
+                  <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
                     <Camera className="w-6 h-6 text-white" />
-                  </button>
+                    <input 
+                      type="file" 
+                      className="hidden" 
+                      onChange={handleImageUpload} 
+                      accept="image/*" 
+                    />
+                  </label>
                 </div>
-              ) : (
-                <button
-                  onClick={triggerFileInput}
-                  className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors"
-                >
-                  <User className="w-12 h-12 text-blue-500" />
-                </button>
-              )}
-              {data.is_active && (
-                <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 px-3 py-0.5 text-sm text-green-700 bg-green-100 rounded-full whitespace-nowrap">
-                  Active
-                </span>
-              )}
+              </div>
+            </div>
+          </div>
+          
+          <div className="pt-20 px-8 pb-8">
+            <div className="flex items-start justify-between">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {data.workspace_owner_name}
+                </h1>
+                <p className="mt-1 text-gray-500">{data.user_id}</p>
+                <div className="mt-4 flex gap-2">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
+                    {data.member_type}
+                  </span>
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700">
+                    {data.data_type}
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                {data.is_active ? (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700">
+                    <CheckCircle2 className="w-4 h-4" />
+                    Active
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-red-50 text-red-700">
+                    <XCircle className="w-4 h-4" />
+                    Inactive
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Name and ID Section */}
-            <h1 className="text-2xl font-semibold text-gray-900 mb-1 text-center">
-              {data.workspace_owner_name}
-            </h1>
-            <p className="text-gray-500 mb-4 text-center break-words">
-              {data.user_id}
-            </p>
+            {/* Email Section */}
+            <div className="mt-8">
+              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
+                <Mail className="w-5 h-5 text-blue-500" />
+                <div className="flex-1 min-w-0">
+                  {isEditingEmail ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        value={emailValue}
+                        onChange={(e) => setEmailValue(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter email"
+                      />
+                      <button
+                        onClick={handleEmailSave}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleEmailCancel}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{data.email}</span>
+                      <button
+                        onClick={() => setIsEditingEmail(true)}
+                        className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
 
-            {/* Tags Section */}
-            <div className="flex flex-wrap justify-center gap-2 mb-8">
-              {data.member_type && (
-                <span className="px-4 py-1 text-sm rounded-full border border-gray-200">
-                  {data.member_type}
-                </span>
-              )}
-              {data.data_type && (
-                <span className="px-4 py-1 text-sm rounded-full border border-gray-200">
-                  {data.data_type}
-                </span>
-              )}
+            {/* Proximity Section */}
+            <div className="mt-4">
+              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
+                <MapPin className="w-5 h-5 text-blue-500" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-500">Proximity Range</p>
+                  {isEditingProximity ? (
+                    <div className="flex items-center gap-2 mt-1">
+                      <input
+                        type="number"
+                        value={proximityValue}
+                        onChange={(e) => setProximityValue(e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter proximity (km)"
+                        min="0"
+                        step="0.1"
+                      />
+                      <button
+                        onClick={handleProximitySave}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        Save
+                      </button>
+                      <button
+                        onClick={handleProximityCancel}
+                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium">{data.proximity} km</span>
+                      <button
+                        onClick={() => setIsEditingProximity(true)}
+                        className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Notification Settings */}
+            <div className="mt-8 bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h3>
+              <div className="space-y-6">
+                {/* Notification Toggle */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-50 rounded-lg">
+                      <BellRing className="w-5 h-5 text-blue-500" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-gray-900">Notifications</p>
+                      <p className="text-sm text-gray-500">Receive notifications about updates</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleNotificationToggle}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      data.is_notification_active ? 'bg-blue-500' : 'bg-gray-200'
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        data.is_notification_active ? 'translate-x-6' : 'translate-x-1'
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Notification Duration */}
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-50 rounded-lg">
+                    <Bell className="w-5 h-5 text-blue-500" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-gray-900 mb-2">Notification Duration</p>
+                    <select
+                      value={data.notification_duration}
+                      onChange={handleDurationChange}
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    >
+                      <option value="one_day">One Day</option>
+                      <option value="seven_days">Seven Days</option>
+                      <option value="one_month">One Month</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Info Grid */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <InfoItem 
-                icon={<Briefcase className="text-blue-500" />}
-                label="Workspace" 
-                value={data.workspace_name} 
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <InfoCard
+                icon={Briefcase}
+                label="Workspace"
+                value={data.workspace_name}
               />
-              <InfoItem 
-                icon={<Hash className="text-blue-500" />}
-                label="Workspace ID" 
-                value={data.workspace_id} 
+              <InfoCard
+                icon={Hash}
+                label="Workspace ID"
+                value={data.workspace_id}
               />
-              <InfoItem 
-                icon={<Database className="text-blue-500" />}
-                label="Customer ID" 
-                value={data.customer_id} 
+              <InfoCard
+                icon={Database}
+                label="Customer ID"
+                value={data.customer_id}
               />
-              <EmailItem />
-              <NotificationDurationItem />
-              <InfoItem 
-                icon={<BellRing className="text-blue-500" />}
-                label="Notifications" 
-                value={data.is_notification_active ? "Active" : "Inactive"}
+              <InfoCard
+                icon={MapPin}
+                label="Location"
+                value={`${data.latitude}, ${data.longitude}`}
               />
-              {(data.latitude && data.longitude) && (
-                <InfoItem 
-                  icon={<MapPin className="text-blue-500" />}
-                  label="Location" 
-                  value={`${data.latitude}, ${data.longitude}`}
-                  subValue={`Proximity: ${data.proximity}km`}
-                />
-              )}
-              <InfoItem 
-                icon={<Key className="text-blue-500" />}
-                label="Password Status" 
-                value={maskPassword(data.password)} 
+              <InfoCard
+                icon={Key}
+                label="Password Status"
+                value="••••••••"
               />
             </div>
 
             {/* Links Section */}
-            <div className="flex flex-wrap gap-4">
+            <div className="mt-8 flex flex-wrap gap-4">
               {data.product_url && (
                 <a
                   href={data.product_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 flex items-center gap-2"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors"
                 >
                   <LinkIcon className="w-4 h-4" />
                   <span>Product URL</span>
@@ -328,7 +414,7 @@ const UserProfile = () => {
                   href={data.qrcode_image_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-blue-500 hover:text-blue-600 flex items-center gap-2"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors"
                 >
                   <QrCode className="w-4 h-4" />
                   <span>QR Code</span>
@@ -340,19 +426,6 @@ const UserProfile = () => {
       </div>
     </div>
   );
-};
-
-const InfoItem = ({ icon, label, value, subValue }) => (
-  <div className="flex items-start gap-3">
-    <div className="w-5 h-5 flex-shrink-0 mt-1">
-      {icon}
-    </div>
-    <div className="min-w-0 flex-1">
-      <p className="text-sm text-gray-500">{label}</p>
-      <p className="font-medium text-gray-900 break-words">{value}</p>
-      {subValue && <p className="text-sm text-gray-500">{subValue}</p>}
-    </div>
-  </div>
-);
+}
 
 export default UserProfile;

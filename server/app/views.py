@@ -353,7 +353,7 @@ class UserManagement(APIView):
             "success": True,
             "message": "User found",
             "response": response["data"][0]
-        },status=status.HTTP_302_FOUND)
+        },status=status.HTTP_200_OK)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class flight_data(APIView):

@@ -10,3 +10,19 @@ export function isTokenExpired(token) {
         return true; 
     }
 }
+
+export function decodeJWT(token) {
+    const decodeBase64 = (str) => {
+      const decoded = atob(str);
+      return JSON.parse(decoded);
+    };
+    const parts = token.split(".");
+  
+    if (parts.length === 3) {
+      const payload = decodeBase64(parts[1]);
+      return payload;
+    } else {
+      throw new Error("Invalid token format");
+    }
+  }
+  
