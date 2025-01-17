@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { fetchFlightsApi } from "../../services/api.config";
 
-const AirportSearch = () => {
+const AirportSearch = ({getCurrentLocation}) => {
   const {
     latitude,
     setLatitude,
@@ -237,7 +237,7 @@ const AirportSearch = () => {
             </div>
           </div>
 
-          <div className="flex gap-4 "> 
+          <div className="flex gap-4 ">
             <div
               onClick={() => setTypeOfStatus("arr")}
               className={`cursor-pointer w-full text-center border p-2 ${
@@ -264,8 +264,8 @@ const AirportSearch = () => {
               <span className="text-2xl font-semibold">Nearby Airports</span>
             </div>
 
-            <div className="w-full z-[1] relative rounded-lg overflow-hidden mb-6">
-              <MapComponent />
+            <div className="w-full h-96 z-[1] relative rounded-lg overflow-hidden mb-6">
+              <MapComponent getCurrentLocation={getCurrentLocation} />
             </div>
           </div>
         </div>

@@ -22,6 +22,12 @@ export const AppProvider = ({ children }) => {
     minute: new Date().getMinutes(),
   });
   const [typeOfStatus, setTypeOfStatus] = useState("arr");
+  const [currentLatitude, setcurrentLatitude] = useState(null);
+  const [currentLongitude, setcurrentLongitude] = useState(null);
+  const [searchedLatitude, setSearchedLatitude] = useState(null);
+  const [searchedLongitude, setSearchedLongitude] = useState(null);
+  const [mobileWindow, setmobileWindow] = useState("map");
+  const [exit, setexit] = useState(false);
 
   return (
     <AppContext.Provider
@@ -30,6 +36,10 @@ export const AppProvider = ({ children }) => {
         setLatitude,
         longitude,
         setLongitude,
+        currentLatitude,
+        setcurrentLatitude,
+        currentLongitude,
+        setcurrentLongitude,
         airports,
         setAirports,
         loading,
@@ -50,6 +60,14 @@ export const AppProvider = ({ children }) => {
         setSelectedAirport,
         flights,
         setFlights,
+        searchedLatitude,
+        setSearchedLatitude,
+        searchedLongitude,
+        setSearchedLongitude,
+        mobileWindow,
+        setmobileWindow,
+        exit,
+        setexit,
       }}
     >
       {children}

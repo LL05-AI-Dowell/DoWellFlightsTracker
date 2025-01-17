@@ -1,4 +1,4 @@
-import { servicesAxiosInstance, tempAxiosInstance } from './config'
+import { servicesAxiosInstance, } from './config'
 
 export const getServerHealth = async () => {
     const response = await servicesAxiosInstance.get('/')
@@ -6,11 +6,11 @@ export const getServerHealth = async () => {
 }
 
 export const fetchAirportApi = async (params) => {
-    const response = await tempAxiosInstance.post('/api/fligts/?type=get_airport_by_lat_long' , params )
+    const response = await servicesAxiosInstance.post("/api/v1/fligts/?type=get_airport_by_lat_long" , params )
     return response.data
 }
 export const fetchFlightsApi = async (params) => {
-    const response = await tempAxiosInstance.post('/api/fligts/?type=get_flights_arrival_departure' , params )
+    const response = await servicesAxiosInstance.post('/api/v1/fligts/?type=get_flights_arrival_departure' , params )
     return response.data
 }
 

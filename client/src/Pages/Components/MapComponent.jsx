@@ -1,95 +1,120 @@
-import React, { useContext } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { useContext, useEffect, useRef, useState } from "react";
 import { AppContext } from "../../ContextApi/ContextApi";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import LocationToggle from "./LocationToggle";
 
-const MapComponent = () => {
+const MapComponent = ({getCurrentLocation}) => {
   const { latitude, longitude, airports } = useContext(AppContext);
+  const mapRef = useRef(null);
+  const mapInstanceRef = useRef(null);
+  const [isMapInitialized, setIsMapInitialized] = useState(false);
 
-  const defaultPosition = [latitude || 30, longitude || 70];
-  const zoom = latitude && longitude ? 8 : 4;
+  useEffect(() => {
+    const loadLeaflet = async () => {
+      if (!window.L) {
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href =
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css";
+        document.head.appendChild(link);
 
-  const redIcon = new L.Icon({
-    iconUrl:
-      "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
-    shadowUrl:
-      "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-  });
+        const script = document.createElement("script");
+        script.src =
+          "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js";
+        script.async = true;
+
+        await new Promise((resolve, reject) => {
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      initializeMap();
+    };
+
+    const initializeMap = () => {
+      if (!mapRef.current || !window.L) return;
+
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        setIsMapInitialized(false);
+      }
+
+      const L = window.L;
+      const defaultLat = latitude || 30;
+      const defaultLng = longitude || 70;
+      const zoom = latitude && longitude ? 8 : 4;
+
+      mapRef.current.style.display = "none";
+      mapRef.current.offsetHeight; 
+      mapRef.current.style.display = "block";
+
+      const map = L.map(mapRef.current, {
+        zoomControl: true,
+        scrollWheelZoom: true,
+      }).setView([defaultLat, defaultLng], zoom);
+
+      mapInstanceRef.current = map;
+      setIsMapInitialized(true);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "© OpenStreetMap contributors",
+      }).addTo(map);
+
+      if (latitude && longitude) {
+        const redIcon = L.icon({
+          iconUrl:
+            "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png",
+          shadowUrl:
+            "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
+          iconSize: [25, 41],
+          iconAnchor: [12, 41],
+          popupAnchor: [1, -34],
+          shadowSize: [41, 41],
+        });
+
+        L.marker([latitude, longitude], { icon: redIcon })
+          .bindPopup(`<b>My location</b><br>`)
+          .addTo(map);
+      }
+
+      if (airports && airports.length > 0) {
+        airports.forEach((airport) => {
+          L.marker([airport.latitude, airport.longitude])
+            .bindPopup(
+              `<b>${airport.name}</b><br>${airport.city}, ${airport.countryCode}`
+            )
+            .addTo(map);
+        });
+      }
+
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 100);
+    };
+
+    loadLeaflet();
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        setIsMapInitialized(false);
+      }
+    };
+  }, [latitude, longitude, airports]);
+
 
   return (
-    <div className="bg-gray-800 relative rounded-lg border-2 border-blue-950">
-      <div className="absolute flex justify-center gap-5 w-[100%] pt-2 h-[100px] z-[99]">
-        <div className="font-semibold border-[1.2px] border-blue-950 w-[150px] h-fit p-2 rounded-lg bg-white text-xs flex">
-          <div className="w-[15%]">
-            <div className="w-4 h-4 rounded-full border-2 border-blue-950 cursor-pointer bg-blue-950"></div>
-          </div>
-          <div className="w-[85%]">
-            <h1>Current Location</h1>
-            <h1>
-              Lat:{" "}
-              <span className="font-normal">
-                {latitude?.toFixed(2) || "75.00"}
-              </span>
-            </h1>
-            <h1>
-              Long:{" "}
-              <span className="font-normal">
-                {longitude?.toFixed(2) || "75.00"}
-              </span>
-            </h1>
-          </div>
-        </div>
-
-        <div className="font-semibold border-[1.2px] border-blue-950 w-[150px] h-fit p-2 rounded-lg bg-white text-xs flex">
-          <div className="w-[15%]">
-            <div className="w-4 h-4 rounded-full border-2 border-blue-950 cursor-pointer"></div>
-          </div>
-          <div className="w-[85%]">
-            <h1>Selected Location</h1>
-            <h1>
-              Lat: <span className="font-normal">75.00</span>
-            </h1>
-            <h1>
-              Long: <span className="font-normal">75.00</span>
-            </h1>
-          </div>
-        </div>
-      </div>
-
-      <MapContainer
-        center={defaultPosition}
-        zoom={zoom}
-        className="h-96 max-md:h-[54vh] rounded-lg overflow-hidden"
+    <div className="bg-gray-800 h-full relative rounded-lg border-2 border-blue-950">
+      <LocationToggle getCurrentLocation={getCurrentLocation} />
+      <div
+        ref={mapRef}
+        className="h-full  rounded-lg overflow-hidden"
         style={{ position: "relative", zIndex: 1 }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution="© OpenStreetMap contributors"
-        />
-
-        {latitude && longitude && (
-          <Marker position={[latitude, longitude]} icon={redIcon}>
-            <Popup>
-              <b>My location</b>
-            </Popup>
-          </Marker>
-        )}
-
-        {airports.map((airport, index) => (
-          <Marker key={index} position={[airport.latitude, airport.longitude]}>
-            <Popup>
-              <b>{airport.name}</b>
-              <br />
-              {airport.city}, {airport.countryCode}
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      />
     </div>
   );
 };

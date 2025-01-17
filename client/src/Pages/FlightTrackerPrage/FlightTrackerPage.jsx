@@ -37,6 +37,10 @@ const FlightTrackerPage = () => {
     setSelectedAirport,
     flights,
     setFlights,
+    setSearchedLatitude,
+    setSearchedLongitude,
+    setcurrentLatitude,
+    setcurrentLongitude,
   } = useContext(AppContext);
 
   
@@ -48,30 +52,41 @@ const FlightTrackerPage = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
-  const getCurrentLocation = () => {
-    setlocationLoading(true);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setLatitude(position.coords.latitude);
-          setLongitude(position.coords.longitude);
-          setlocationLoading(false);
-        },
-        (err) => {
-          setError(`Error getting location: ${err.message}`);
-          toast.error(`Error getting location: ${err.message}`);
-          setlocationLoading(false);
-        }
-      );
-    } else {
-      setError("Geolocation is not supported by this browser.");
-      setlocationLoading(false);
-    }
-  };
+const getCurrentLocation = () => {
+  setlocationLoading(true);
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const currentLat = position.coords.latitude;
+        const currentLong = position.coords.longitude;
 
-  useEffect(() => {
-    getCurrentLocation();
-  }, []);
+        setLatitude(currentLat);
+        setLongitude(currentLong);
+         setcurrentLatitude(currentLat);
+         setcurrentLongitude(currentLong);
+        setSearchedLatitude(null);
+        setSearchedLongitude(null);
+
+
+        setlocationLoading(false);
+      },
+      (err) => {
+        setError(`Error getting location: ${err.message}`);
+        toast.error(`Error getting location: ${err.message}`);
+        setlocationLoading(false);
+      }
+    );
+  } else {
+    setError("Geolocation is not supported by this browser.");
+    toast.error("Geolocation is not supported by this browser.");
+    setlocationLoading(false);
+  }
+};
+
+useEffect(() => {
+  getCurrentLocation();
+}, []);
+
 
   useEffect(() => {
     const fetchAirports = async (lat, long) => {
@@ -102,7 +117,7 @@ const FlightTrackerPage = () => {
 
   return (
     <>
-      <div className=" w-full min-h-screen bg-black relative text-xl overflow-hidden px-[5vw] py-[30px] text-white">
+      <div className=" w-full min-h-screen bg-black relative text-xl overflow-hidden px-[5vw] py-[30px]  text-white">
         <div
           className="absolute top-[-500px] left-[50%] translate-x-[-50%] h-[700px] z-[0] w-[700px] rounded-full"
           style={{
@@ -225,7 +240,7 @@ const FlightTrackerPage = () => {
           </motion.button>
         </div>
 
-        <AirportSearch />
+        <AirportSearch getCurrentLocation={getCurrentLocation} />
 
         <div className="w-full mt-[50px] flex justify-between items-center">
           <div className="flex items-center gap-2 mb-4">

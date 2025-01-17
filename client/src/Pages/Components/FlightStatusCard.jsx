@@ -43,7 +43,7 @@ const FlightStatusCard = ({ flight }) => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-slate-900 to-slate-800 w-full text-white rounded-2xl p-8 mb-4 shadow-xl hover:shadow-2xl transition-all duration-300">
+    <div className="bg-gradient-to-br from-slate-900 to-slate-800 w-full text-white rounded-2xl p-8 max-sm:px-2 max-sm:py-3  mb-4 shadow-xl hover:shadow-2xl transition-all duration-300">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center space-x-3">
           <Plane className="text-blue-400" size={24} />
@@ -113,7 +113,7 @@ const FlightStatusCard = ({ flight }) => {
         </div>
 
         <div className="flex flex-col items-center justify-center relative">
-          <div className="text-sm text-gray-400 mb-2">
+          <div className="text-sm text-center text-gray-400 mb-2">
             Duration
             <span className="text-white ml-1">
               {formatMinutesToHoursAndMinutes(
@@ -132,7 +132,7 @@ const FlightStatusCard = ({ flight }) => {
           </div>
 
           {flight.flightDurations.taxiOutMinutes && (
-            <div className="text-sm text-gray-400 mb-2">
+            <div className="text-sm text-center text-gray-400 mb-2">
               Remaining Time
               <span className="text-white">
                 {" "}
@@ -145,7 +145,7 @@ const FlightStatusCard = ({ flight }) => {
             </div>
           )}
 
-          <div className="text-sm text-gray-400">Direct Flight</div>
+          {/* <div className="text-sm text-gray-400">Direct Flight</div> */}
         </div>
 
         <div className="space-y-2 text-right">
@@ -171,28 +171,28 @@ const FlightStatusCard = ({ flight }) => {
       >
         <div className="mt-6 pt-6 border-t border-gray-700/50 space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="bg-slate-800/50 p-4 rounded-xl">
+            <div className="bg-slate-800/50 p-[6px] rounded-xl">
               <div className="flex items-center gap-3">
                 <Plane
                   className="text-[var(--primary-color-green)]"
                   size={20}
                 />
                 <div>
-                  <div className="text-sm text-gray-400">Flight Id</div>
-                  <div className="text-base">{flight.flightId}</div>
+                  <div className="text-sm max-sm:text-xs text-gray-400">Flight Id</div>
+                  <div className="text-base max-sm:text-xs">{flight.flightId}</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-slate-800/50 p-4 rounded-xl">
+            <div className="bg-slate-800/50 p-[6px] rounded-xl">
               <div className="flex items-center gap-3">
                 <Plane
                   className="text-[var(--primary-color-green)]"
                   size={20}
                 />
                 <div>
-                  <div className="text-sm text-gray-400">Aircraft</div>
-                  <div className="text-base">
+                  <div className="text-sm max-sm:text-xs text-gray-400">Aircraft</div>
+                  <div className="text-base max-sm:text-xs">
                     {flight.flightEquipment.actualEquipmentIataCode} -{" "}
                     {flight.flightEquipment.tailNumber}
                   </div>
@@ -201,15 +201,15 @@ const FlightStatusCard = ({ flight }) => {
             </div>
 
             {flight.airportResources.baggage && (
-              <div className="bg-slate-800/50 p-4 rounded-xl">
+              <div className="bg-slate-800/50 p-[6px] rounded-xl">
                 <div className="flex items-center gap-2">
                   <BaggageClaim
                     className="text-[var(--primary-color-green)]"
                     size={20}
                   />
                   <div>
-                    <div className="text-sm text-gray-400">Baggage Claim</div>
-                    <div className="text-base">
+                    <div className="text-sm max-sm:text-xs text-gray-400">Baggage Claim</div>
+                    <div className="text-base max-sm:text-xs">
                       {flight.airportResources.baggage}
                     </div>
                   </div>
@@ -217,7 +217,7 @@ const FlightStatusCard = ({ flight }) => {
               </div>
             )}
           </div>
-          <div className="bg-slate-800/50 p-4 rounded-xl">
+          <div className="bg-slate-800/50 p-[6px] rounded-xl">
             <div className="flex items-center gap-3">
               <DoorOpen
                 className="text-[var(--primary-color-green)]"
@@ -225,8 +225,8 @@ const FlightStatusCard = ({ flight }) => {
               />
 
               <div>
-                <div className="text-sm text-gray-400">Gates</div>
-                <div className="text-base">
+                <div className="text-sm max-sm:text-xs text-gray-400">Gates</div>
+                <div className="text-base max-sm:text-xs">
                   <span>
                     Departure: Terminal{" "}
                     {flight.airportResources.departureTerminal}, Gate{" "}
@@ -240,12 +240,12 @@ const FlightStatusCard = ({ flight }) => {
           </div>
 
           {getDelayInfo()?.length > 0 && (
-            <div className="bg-orange-950/30 p-4 rounded-xl">
+            <div className="bg-orange-950/30 p-[6px] rounded-xl">
               <div className="flex items-center gap-3">
                 <Clock className="text-orange-400" size={20} />
                 <div>
-                  <div className="text-sm text-orange-400">Delays</div>
-                  <div className="text-base">{getDelayInfo().join(" | ")}</div>
+                  <div className="text-sm max-sm:text-xs text-orange-400">Delays</div>
+                  <div className="text-base max-sm:text-xs">{getDelayInfo().join(" | ")}</div>
                 </div>
               </div>
             </div>
@@ -255,7 +255,7 @@ const FlightStatusCard = ({ flight }) => {
 
       <button
         onClick={() => setShowDetails(!showDetails)}
-        className="w-full mt-6 py-2 flex items-center justify-center gap-2 text-[var(--primary-color-green)] hover:text-emerald-300 transition-colors duration-200"
+        className="w-full  py-2 flex items-center justify-center gap-2 text-[var(--primary-color-green)] hover:text-emerald-300 transition-colors duration-200"
       >
         {showDetails ? (
           <>
