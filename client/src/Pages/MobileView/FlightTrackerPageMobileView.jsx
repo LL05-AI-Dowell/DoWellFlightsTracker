@@ -30,6 +30,7 @@ const FlightTrackerPageMobileView = () => {
     setexit,
     setcurrentLatitude,
     setcurrentLongitude,
+    setSelectedCity,
   } = useContext(AppContext);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -53,6 +54,7 @@ const FlightTrackerPageMobileView = () => {
 
           setSearchedLatitude(null);
           setSearchedLongitude(null);
+          setSelectedCity(null);
 
           setloading(false);
         },

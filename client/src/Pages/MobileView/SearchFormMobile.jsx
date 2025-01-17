@@ -143,6 +143,7 @@ const SearchFormMobile = ({ getCurrentLocation }) => {
     setTypeOfStatus("arr");
     setSearchRadius("100");
     setSelectedAirport("");
+    setAirports([]);
     const now = new Date();
     setDateTime({
       year: now.getFullYear(),
@@ -248,7 +249,9 @@ const SearchFormMobile = ({ getCurrentLocation }) => {
             </span>
           </div>
           {mobileWindow === "flights" ? (
-            <div className="text-red-500 text-[10px]">DisClaimer-The Information May Not Accurate , Check</div>
+            <div className="text-red-500 text-[10px]">
+              DisClaimer-The Information May Not Accurate , Check
+            </div>
           ) : mobileWindow === "map" ? (
             <div className="relative pt-1">
               <div className="h-1 bg-[#34d399]/20 rounded-full">

@@ -3,7 +3,8 @@ import { AppContext } from "../../ContextApi/ContextApi";
 import LocationToggle from "./LocationToggle";
 
 const MapComponent = ({getCurrentLocation}) => {
-  const { latitude, longitude, airports } = useContext(AppContext);
+  const { latitude, longitude, airports, selectedCity } =
+    useContext(AppContext);
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const [isMapInitialized, setIsMapInitialized] = useState(false);
@@ -76,7 +77,7 @@ const MapComponent = ({getCurrentLocation}) => {
         });
 
         L.marker([latitude, longitude], { icon: redIcon })
-          .bindPopup(`<b>My location</b><br>`)
+          .bindPopup( selectedCity ? (`<b>${selectedCity.name}</b>`) :`<b>My location</b><br>`)
           .addTo(map);
       }
 
@@ -84,7 +85,7 @@ const MapComponent = ({getCurrentLocation}) => {
         airports.forEach((airport) => {
           L.marker([airport.latitude, airport.longitude])
             .bindPopup(
-              `<b>${airport.name}</b><br>${airport.city}, ${airport.countryCode}`
+              `<b>${airport.fs}-</b><b>${airport.name}</b><br>${airport.city}, ${airport.countryCode}`
             )
             .addTo(map);
         });

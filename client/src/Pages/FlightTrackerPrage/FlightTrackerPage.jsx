@@ -41,6 +41,7 @@ const FlightTrackerPage = () => {
     setSearchedLongitude,
     setcurrentLatitude,
     setcurrentLongitude,
+    setSelectedCity,
   } = useContext(AppContext);
 
   
@@ -66,7 +67,7 @@ const getCurrentLocation = () => {
          setcurrentLongitude(currentLong);
         setSearchedLatitude(null);
         setSearchedLongitude(null);
-
+        setSelectedCity(null)
 
         setlocationLoading(false);
       },

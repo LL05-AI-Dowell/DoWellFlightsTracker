@@ -27,6 +27,7 @@ export const AppProvider = ({ children }) => {
   const [searchedLatitude, setSearchedLatitude] = useState(null);
   const [searchedLongitude, setSearchedLongitude] = useState(null);
   const [mobileWindow, setmobileWindow] = useState("map");
+   const [selectedCity, setSelectedCity] = useState(null);
   const [exit, setexit] = useState(false);
 
   return (
@@ -66,6 +67,8 @@ export const AppProvider = ({ children }) => {
         setSearchedLongitude,
         mobileWindow,
         setmobileWindow,
+        selectedCity,
+        setSelectedCity,
         exit,
         setexit,
       }}

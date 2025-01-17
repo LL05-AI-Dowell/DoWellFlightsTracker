@@ -1,6 +1,8 @@
-import React, { useContext, useEffect } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../ContextApi/ContextApi";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
+import LocationSelector from "./LocationSelector";
+import { IoClose } from "react-icons/io5";
 
 const LocationToggle = ({ getCurrentLocation }) => {
   const {
@@ -27,9 +29,10 @@ const LocationToggle = ({ getCurrentLocation }) => {
     }
   }, [searchedLatitude, searchedLongitude]);
 
-  const handleSearchedLocationClick = () => {
-    setSearchedLatitude(33.6);
-    setSearchedLongitude(77.6);
+   const [showLocationSelector, setShowLocationSelector] = useState(false);
+   const handleSearchedLocationClick = () => {
+    setShowLocationSelector(true);
+
   };
 
   const isCurrentLocation =
@@ -37,6 +40,25 @@ const LocationToggle = ({ getCurrentLocation }) => {
 
   return (
     <div className="absolute flex justify-center gap-5 max-sm:gap-1 w-[100%] pt-2 px-2 h-[100px] text-black z-[2]">
+      <AnimatePresence>
+        {showLocationSelector && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="fixed top-[26vh] z-[9999] w-[80%] p-4 rounded-lg bg-white shadow-xl"
+          >
+            <div className="flex justify-center mb-2">
+              <button onClick={() => setShowLocationSelector(false)}>
+                <IoClose className="text-2xl" />
+              </button>
+            </div>
+            <LocationSelector setShowLocationSelector={setShowLocationSelector} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <motion.div
         whileTap={{ scale: 0.93 }}
         className="font-semibold border-[1.2px] border-blue-950 w-[150px] h-fit p-2 rounded-lg bg-white text-xs flex cursor-pointer"
@@ -53,7 +75,9 @@ const LocationToggle = ({ getCurrentLocation }) => {
           <h1>Current Location</h1>
           <h1>
             Lat:{" "}
-            <span className="font-normal">{currentLatitude?.toFixed(4) || "laoding.."}</span>
+            <span className="font-normal">
+              {currentLatitude?.toFixed(4) || "laoding.."}
+            </span>
           </h1>
           <h1>
             Long:{" "}
