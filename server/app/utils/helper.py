@@ -232,6 +232,26 @@ def get_flights_arrival_departure_by_airport(airport_code,type, year,month,day,h
             "message":f"Request Exception: {e}"
         }
 
+def check_airport_proximity(radius,location_list):
+    url = "https://100070.pythonanywhere.com/check-distance/"
+
+    payload = {
+    "radius": radius,
+    "unit": "kilometers",
+    "reference_point":[28.6290354,77.0767924],
+    "locations": location_list
+    }
+
+    try:
+        response = requests.post(url=url, json=payload)    
+        return response.json()
+        
+    except requests.RequestException as e:
+        return {
+            "success": False,
+            "message":f"Request Exception: {e}"
+        }
+
 class JWTUtils:
     def __init__(self):
         self.secret_key = config['JWT_SECRET_KEY']
@@ -315,4 +335,3 @@ def login_required(view_func):
 
     return _wrapped_view
     
-

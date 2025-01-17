@@ -365,6 +365,8 @@ class flight_data(APIView):
             return self.get_airport_by_lat_long(request)
         elif type_request == "get_flights_arrival_departure":
             return self.get_flights_arrival_departure(request)
+        elif type_request == "check_proximity":
+            return self.check_proximity(request)
         else:
             return self.handle_error(request)
     def get(self, request):
@@ -463,7 +465,35 @@ class flight_data(APIView):
             "response": res['response']['flightStatuses']
         })
 
-    
+    def check_proximity(self, request):
+        radius = request.data.get("radius")
+        location_list = request.data.get("locations")
+
+        api_response = check_airport_proximity(radius=radius, location_list=location_list)
+        if api_response["success"] == "true":
+            distance_data = api_response["results"].get("distance_data")
+
+            airports_in_proximity = []
+            for data in distance_data:
+                if data["within_distance"] == True:
+                    airports_in_proximity.append({
+                        "location":data["location"],
+                        "distance": data["distance"]
+                    })
+
+                    return Response({
+                        "success":True,
+                        "proximity_details":airports_in_proximity
+                    },status=status.HTTP_200_OK)
+        else:
+            # return Response(api_response)
+            return Response({
+                "success": False,
+                "message": api_response["message"],
+                "error":api_response["error"]
+            })
+                    
+
     def handle_error(self, request): 
         return Response({
             "success": False,
