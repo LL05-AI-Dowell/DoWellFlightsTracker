@@ -12,6 +12,7 @@ import { FaSliders } from "react-icons/fa6";
 import toast from "react-hot-toast";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { checkProximity } from "../../services/api.config";
+import { Loader } from "lucide-react";
  
 
 const FlightTrackerPageMobileView = () => {
@@ -168,6 +169,9 @@ const FlightTrackerPageMobileView = () => {
         }}
       >
         <img className="h-[12vh] w-fit" src={mobilelogo} alt="logo" />
+        {authChecking && (
+          <Loader className="w-6 h-6 mt-6 animate-spin text-blue-500" />
+        )}
         {!isAuthorized && (
           <div className="text-center px-4">
             <p className="text-red-500 mt-4">{authError}</p>
