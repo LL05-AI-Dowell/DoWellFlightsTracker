@@ -8,11 +8,11 @@ export const getServerHealth = async () => {
 };
 
 export const fetchAirportApi = async (params) => {
-    const response = await servicesAxiosInstance.post("/api/v1/fligts/?type=get_airport_by_lat_long" , params )
+    const response = await servicesAxiosInstance.post("/api/v1/flights/?type=get_airport_by_lat_long" , params )
     return response.data
 }
 export const fetchFlightsApi = async (params) => {
-    const response = await servicesAxiosInstance.post('/api/v1/fligts/?type=get_flights_arrival_departure' , params )
+    const response = await servicesAxiosInstance.post('/api/v1/flights/?type=get_flights_arrival_departure' , params )
     return response.data
 }
 
@@ -59,7 +59,7 @@ export const getCityList = async (data) => {
 
 export const checkProximity = async (data) => {
   const response = await servicesAxiosInstance.post(
-    "/api/v1/fligts/?type=check_proximity",
+    "/api/v1/flights/?type=check_proximity",
     data
   );
   return response.data;

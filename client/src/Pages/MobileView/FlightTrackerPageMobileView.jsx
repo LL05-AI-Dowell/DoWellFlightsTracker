@@ -20,6 +20,8 @@ const FlightTrackerPageMobileView = () => {
   const userId = searchParams.get("user_id");
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const [isMobile, setIsMobile] = useState(false);
 
   const {
     latitude,
@@ -52,7 +54,21 @@ const FlightTrackerPageMobileView = () => {
     setIsDropdownOpen(!isDropdownOpen);
   };
 
+  const checkIsMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  };
+
+
   const checkUserAuthorization = async (lat, long) => {
+    if (!checkIsMobile()) {
+      setAuthChecking(false);
+      setIsAuthorized(false);
+      setAuthError("This application is only accessible on mobile devices");
+      return;
+    }
+
     try {
       const response = await checkProximity({
         user_id: userId,
@@ -60,13 +76,22 @@ const FlightTrackerPageMobileView = () => {
         location_list: [lat.toString(), long.toString()],
       });
 
-      setIsAuthorized(response === true);
+      if (response.success === false) {
+        setAuthError(response.message);
+        setIsAuthorized(false);
+      } else {
+        setIsAuthorized(true);
+        setAuthError("");
+      }
       setAuthChecking(false);
     } catch (error) {
-      console.error("Authorization check failed:", error);
       setIsAuthorized(false);
+      setAuthError(
+        error.response?.data.response
+          ? `${error.response.data.message} and you are ${(error.response.data.response).toFixed(2)} KM far.`
+          : error.response?.data.message || "An error occurred."
+      );
       setAuthChecking(false);
-      toast.error("Authorization check failed");
     }
   };
 
@@ -109,11 +134,22 @@ const FlightTrackerPageMobileView = () => {
   };
 
   useEffect(() => {
+    setIsMobile(checkIsMobile());
+    
     if (!workspaceId || !userId) {
       setAuthChecking(false);
       setIsAuthorized(false);
+      setAuthError("You are not authorized to access this page");
       return;
     }
+
+    if (!checkIsMobile()) {
+      setAuthChecking(false);
+      setIsAuthorized(false);
+      setAuthError("This application is only accessible on mobile devices");
+      return;
+    }
+
     getCurrentLocation();
   }, [workspaceId, userId]);
 
@@ -132,8 +168,15 @@ const FlightTrackerPageMobileView = () => {
         }}
       >
         <img className="h-[12vh] w-fit" src={mobilelogo} alt="logo" />
-        {(!workspaceId || !userId || !isAuthorized) && (
-          <p className="text-red-500 mt-4">You are not authorized</p>
+        {!isAuthorized && (
+          <div className="text-center px-4">
+            <p className="text-red-500 mt-4">{authError}</p>
+            {/* {!isMobile && (
+              <p className="text-sm text-gray-500 mt-2">
+                Please open this application on your mobile device
+              </p>
+            )} */}
+          </div>
         )}
       </motion.div>
 

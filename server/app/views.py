@@ -504,6 +504,8 @@ class flight_data(APIView):
         
         data = user_data.get("data", [])
 
+        print("data:", data)
+
         if not data[0].get("latitude") or not data[0].get("longitude"):
             return Response({
                 "success": False,
