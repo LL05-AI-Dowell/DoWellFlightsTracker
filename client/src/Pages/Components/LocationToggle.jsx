@@ -47,7 +47,7 @@ const LocationToggle = ({ getCurrentLocation }) => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="fixed top-[26vh] z-[9999] w-[80%] p-4 rounded-lg bg-white shadow-xl"
+            className="absolute top-[12vh] z-[9999] w-[80%] p-4 rounded-lg bg-white shadow-xl"
           >
             <div className="flex justify-center mb-2">
               <button onClick={() => setShowLocationSelector(false)}>
