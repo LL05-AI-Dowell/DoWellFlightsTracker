@@ -56,3 +56,11 @@ export const getCityList = async (data) => {
   );
   return response.data;
 };
+
+export const checkProximity = async (data) => {
+  const response = await servicesAxiosInstance.post(
+    "/api/v1/fligts/?type=check_proximity",
+    data
+  );
+  return response.data;
+}

@@ -465,33 +465,77 @@ class flight_data(APIView):
             "response": res['response']['flightStatuses']
         })
 
+   
     def check_proximity(self, request):
-        radius = request.data.get("radius")
-        location_list = request.data.get("locations")
+        user_id = request.data.get('user_id')
+        workspace_id = request.data.get('workspace_id')
+        location_list = request.data.get("location_list")
 
-        api_response = check_airport_proximity(radius=radius, location_list=location_list)
-        if api_response["success"] == "true":
-            distance_data = api_response["results"].get("distance_data")
-
-            airports_in_proximity = []
-            for data in distance_data:
-                if data["within_distance"] == True:
-                    airports_in_proximity.append({
-                        "location":data["location"],
-                        "distance": data["distance"]
-                    })
-
-                    return Response({
-                        "success":True,
-                        "proximity_details":airports_in_proximity
-                    },status=status.HTTP_200_OK)
-        else:
-            # return Response(api_response)
+        serializer = CheckProximitySerializer(data={
+            "user_id": user_id,
+            "workspace_id": workspace_id,
+            "location_list": location_list
+        })
+        if not serializer.is_valid():
             return Response({
                 "success": False,
-                "message": api_response["message"],
-                "error":api_response["error"]
-            })
+                "message": "Posting wrong data to API",
+                "errors": serializer.errors,
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        user_data = json.loads(datacube_data_retrieval(
+            api_key,
+            f"{workspace_id}_dowell_flight_tracker",
+            f"{workspace_id}_users",
+            {
+                "user_id": user_id,
+                "workspace_id": workspace_id
+            },
+            1,
+            0,
+            False
+        ))
+
+        if not user_data["data"]:
+            return Response({
+                "success": False,
+                "message": "User not found"
+            }, status=status.HTTP_404_NOT_FOUND)
+        
+        data = user_data.get("data", [])
+
+        if not data[0].get("latitude") or not data[0].get("longitude"):
+            return Response({
+                "success": False,
+                "message": "Please contact the administrator. Sorry for the inconvenience caused."
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        reference_point = [data[0]["latitude"], data[0]["longitude"]]
+        api_response = check_airport_proximity(data[0].get("proximity"), reference_point, location_list)
+
+        if api_response.get("success") == "true":
+            distance_data = api_response["results"].get("distance_data", [])
+
+            if distance_data[0]["within_distance"]:
+
+                return Response({
+                    "success": True,
+                    "message": "You are in the following proximity",
+                    "response": distance_data[0]["distance"]
+                })
+            else:
+                return Response({
+                    "success": False,
+                    "message": "You are not in the specified proximity",
+                    "response": distance_data[0]["distance"]
+                }, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({
+                "success": False,
+                "message": "You are not in the specified proximity",
+                "response": api_response
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
                     
 
     def handle_error(self, request): 

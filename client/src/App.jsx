@@ -19,8 +19,8 @@ const App = () => {
         <Route path="/" element={<WelcomePage />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/signup" element={<SignupPage />} />
-        <Route path="/dowellflighttracker" element={<FlightTrackerPage />} />
-        <Route path="/dowellflighttrackermobileview" element={<FlightTrackerPageMobileView />} />
+        <Route path="/dowellflighttrackers" element={<FlightTrackerPage />} />
+        <Route path="/dowellflighttracker" element={<FlightTrackerPageMobileView />} />
 
         <Route path="dashboard" element={<DashboardPage />}>
           <Route index element={<HomePage />} />

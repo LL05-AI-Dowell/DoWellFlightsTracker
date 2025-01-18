@@ -12,3 +12,8 @@ class UserSignUpSerializer(serializers.Serializer):
     latitude = serializers.DecimalField(max_digits=10, decimal_places=7)
     longitude = serializers.DecimalField(max_digits=10, decimal_places=7)
     workspace_name = serializers.CharField()
+
+class CheckProximitySerializer(serializers.Serializer):
+    user_id = serializers.CharField()
+    workspace_id = serializers.CharField()
+    location_list = serializers.ListField()

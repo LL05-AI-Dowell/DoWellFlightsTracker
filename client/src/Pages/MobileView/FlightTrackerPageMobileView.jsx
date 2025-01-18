@@ -9,6 +9,7 @@ import { motion } from "framer-motion";
 import FlightStatusCard from "../Components/FlightStatusCard";
 import { IoAirplaneSharp } from "react-icons/io5";
 import { FaSliders } from "react-icons/fa6";
+import toast from "react-hot-toast";
 const FlightTrackerPageMobileView = () => {
   const {
     latitude,

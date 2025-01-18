@@ -232,14 +232,14 @@ def get_flights_arrival_departure_by_airport(airport_code,type, year,month,day,h
             "message":f"Request Exception: {e}"
         }
 
-def check_airport_proximity(radius,location_list):
+def check_airport_proximity(radius,reference_point,location_list):
     url = "https://100070.pythonanywhere.com/check-distance/"
 
     payload = {
     "radius": radius,
     "unit": "kilometers",
-    "reference_point":[28.6290354,77.0767924],
-    "locations": location_list
+    "reference_point":reference_point,
+    "locations": [location_list]
     }
 
     try:
