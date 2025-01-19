@@ -55,7 +55,7 @@ const Dashboard = () => {
               {dashboardConfig.generalItems.map((item, index) => (
                 <div key={index}>
                   <div
-                    className="flex items-center text-sm py-3 px-4 cursor-pointer hover:bg-orange-600 hover:rounded-xl transition-all"
+                    className="flex items-center text-sm py-3 px-4 cursor-pointer hover:bg-green-600 hover:rounded-xl transition-all"
                     onClick={() => navigate(`${item.path}`)} 
                   >
                     <item.icon className="w-5 h-5 mr-3" />
@@ -80,7 +80,7 @@ const Dashboard = () => {
                         {item.sublabels.map((sublabel, subIndex) => (
                           <div
                             key={subIndex}
-                            className="flex items-center text-sm py-2 px-4 cursor-pointer hover:bg-orange-500 hover:rounded-lg transition-all"
+                            className="flex items-center text-sm py-2 px-4 cursor-pointer hover:bg-green-500 hover:rounded-lg transition-all"
                             onClick={() => navigate(`/dashboard${sublabel.path}`)} // Navigate on sublabel click
                           >
                             <sublabel.icon className="w-4 h-4 mr-2" />

@@ -1,0 +1,38 @@
+version: '3.9'
+services:
+  server:
+    build: ./server
+    container_name: server_container
+    ports:
+      - '9001:9001'
+    env_file: 
+      - ./.env
+    volumes:
+      - ./server:/usr/src/app
+    restart: always
+    networks:
+      - queue-net
+
+  client:
+    build: ./client
+    container_name: client_container
+    ports:
+      - '9000:9000'
+    restart: always
+    env_file: 
+      - ./.env
+    volumes:
+      - ./client:/usr/src/app
+      - /usr/src/app/node_modules
+    networks:
+      - queue-net
+    depends_on:
+      - server
+  
+
+
+
+
+networks:
+  queue-net:
+    driver: bridge

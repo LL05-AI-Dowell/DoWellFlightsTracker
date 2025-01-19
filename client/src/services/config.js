@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// const baseURL = import.meta.env.VITE_SERVER_URL;
-const baseURL = "http://127.0.0.1:8000";
+const baseURL = import.meta.env.VITE_SERVER_URL;
+// const baseURL = "http://127.0.0.1:8000";
 const countryAndCityDataBaseURL = "https://100074.pythonanywhere.com";
 
 

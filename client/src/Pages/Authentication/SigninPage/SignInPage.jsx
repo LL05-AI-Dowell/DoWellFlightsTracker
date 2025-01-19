@@ -1,6 +1,6 @@
 import { Shield, ShieldAlert, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { getServerHealth, SignIn } from "../../../services/api.config"; // Assuming loginUser is the API call
+import { getServerHealth, SignIn } from "../../../services/api.config";
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -170,7 +170,7 @@ const SignInPage = () => {
           <div className="text-center">
             <p className="text-sm">
               Dont have an account?{" "}
-              <a href="/signup" className="text-blue-600 hover:underline">
+              <a href="/dowelltracker/signup" className="text-blue-600 hover:underline">
                 Register
               </a>
             </p>

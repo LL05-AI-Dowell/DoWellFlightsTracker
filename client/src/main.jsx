@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { AppProvider } from './ContextApi/ContextApi.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
+  <BrowserRouter basename='/dowelltracker'>
   <AppProvider>
 
       <App />

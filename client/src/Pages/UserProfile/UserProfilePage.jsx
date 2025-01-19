@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from "framer-motion";
 import { 
   User,
   Mail, 
@@ -62,27 +63,30 @@ function UserProfile() {
 
   if (loading || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-gray-900">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
       </div>
     );
   }
 
   const InfoCard = ({ icon: Icon, label, value, subValue }) => (
-    <div className="bg-white p-4 rounded-lg border border-gray-100 hover:border-blue-100 transition-colors">
+    <motion.div 
+      whileHover={{ y: -5 }}
+      className="bg-gray-800 p-4 rounded-xl border border-gray-700 hover:border-blue-500 transition-colors"
+    >
       <div className="flex items-start gap-3">
-        <div className="p-2 bg-blue-50 rounded-lg">
-          <Icon className="w-5 h-5 text-blue-500" />
+        <div className="p-2 bg-blue-500 bg-opacity-20 rounded-lg">
+          <Icon className="w-5 h-5 text-blue-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-gray-500">{label}</p>
-          <p className="mt-1 font-medium text-gray-900 break-words">{value}</p>
+          <p className="text-sm font-medium text-gray-400">{label}</p>
+          <p className="mt-1 font-medium text-gray-100 break-words">{value}</p>
           {subValue && (
             <p className="mt-1 text-sm text-gray-500">{subValue}</p>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 
   const handleEmailSave = async () => {
@@ -166,14 +170,21 @@ function UserProfile() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen bg-gray-900 py-8 px-4 text-gray-100 scrollbar-hide">
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-4xl mx-auto"
+      >
         {/* Header Section */}
-        <div className="overflow-hidden">
-          <div className="relative h-32">
+        <div className="overflow-hidden scrollbar-hide">
+          <div className="relative h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-2xl scrollbar-hide">
             <div className="absolute -bottom-16 left-8">
-              <div className="relative group">
-                <div className="w-32 h-32 rounded-2xl bg-white p-1">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                className="relative group"
+              >
+                <div className="w-32 h-32 rounded-2xl bg-gray-800 p-1">
                   {previewImage || data.profile_image ? (
                     <img 
                       src={previewImage || data.profile_image}
@@ -181,48 +192,43 @@ function UserProfile() {
                       className="w-full h-full object-cover rounded-xl"
                     />
                   ) : (
-                    <div className="w-full h-full rounded-xl bg-blue-50 flex items-center justify-center">
-                      <User className="w-12 h-12 text-blue-500" />
+                    <div className="w-full h-full rounded-xl bg-gray-700 flex items-center justify-center">
+                      <User className="w-12 h-12 text-blue-400" />
                     </div>
                   )}
                   <label className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 rounded-xl opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity">
                     <Camera className="w-6 h-6 text-white" />
-                    <input 
-                      type="file" 
-                      className="hidden" 
-                      onChange={handleImageUpload} 
-                      accept="image/*" 
-                    />
+                    <input type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                   </label>
                 </div>
-              </div>
+              </motion.div>
             </div>
           </div>
           
-          <div className="pt-20 px-8 pb-8">
+          <div className="pt-20 px-8 pb-8 bg-gray-800 rounded-b-2xl">
             <div className="flex items-start justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                   {data.workspace_owner_name}
                 </h1>
-                <p className="mt-1 text-gray-500">{data.user_id}</p>
+                <p className="mt-1 text-gray-400">{data.user_id}</p>
                 <div className="mt-4 flex gap-2">
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-500 bg-opacity-20 text-blue-400">
                     {data.member_type}
                   </span>
-                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-50 text-green-700">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-500 bg-opacity-20 text-purple-400">
                     {data.data_type}
                   </span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {data.is_active ? (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-50 text-green-700">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-green-500 bg-opacity-20 text-green-400">
                     <CheckCircle2 className="w-4 h-4" />
                     Active
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-red-50 text-red-700">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-red-500 bg-opacity-20 text-red-400">
                     <XCircle className="w-4 h-4" />
                     Inactive
                   </span>
@@ -232,8 +238,11 @@ function UserProfile() {
 
             {/* Email Section */}
             <div className="mt-8">
-              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
-                <Mail className="w-5 h-5 text-blue-500" />
+              <motion.div 
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-3 bg-gray-700 p-4 rounded-xl"
+              >
+                <Mail className="w-5 h-5 text-blue-400" />
                 <div className="flex-1 min-w-0">
                   {isEditingEmail ? (
                     <div className="flex items-center gap-2">
@@ -241,101 +250,115 @@ function UserProfile() {
                         type="email"
                         value={emailValue}
                         onChange={(e) => setEmailValue(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-100"
                         placeholder="Enter email"
                       />
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={handleEmailSave}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg"
                       >
                         Save
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={handleEmailCancel}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                        className="px-4 py-2 bg-gray-600 text-gray-100 rounded-lg"
                       >
                         Cancel
-                      </button>
+                      </motion.button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{data.email}</span>
+                      <span className="font-medium text-gray-100">{data.email}</span>
                       <button
                         onClick={() => setIsEditingEmail(true)}
-                        className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                        className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Proximity Section */}
             <div className="mt-4">
-              <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-lg">
-                <MapPin className="w-5 h-5 text-blue-500" />
+              <motion.div 
+                whileHover={{ scale: 1.01 }}
+                className="flex items-center gap-3 bg-gray-700 p-4 rounded-xl"
+              >
+                <MapPin className="w-5 h-5 text-blue-400" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500">Proximity Range</p>
+                  <p className="text-sm font-medium text-gray-400">Proximity Range</p>
                   {isEditingProximity ? (
                     <div className="flex items-center gap-2 mt-1">
                       <input
                         type="number"
                         value={proximityValue}
                         onChange={(e) => setProximityValue(e.target.value)}
-                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="flex-1 px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-100"
                         placeholder="Enter proximity (km)"
                         min="0"
                         step="0.1"
                       />
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={handleProximitySave}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg"
                       >
                         Save
-                      </button>
-                      <button
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={handleProximityCancel}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                        className="px-4 py-2 bg-gray-600 text-gray-100 rounded-lg"
                       >
                         Cancel
-                      </button>
+                      </motion.button>
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="font-medium">{data.proximity} km</span>
+                      <span className="font-medium text-gray-100">{data.proximity} km</span>
                       <button
                         onClick={() => setIsEditingProximity(true)}
-                        className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                        className="p-1 text-gray-400 hover:text-blue-400 transition-colors"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             </div>
 
             {/* Notification Settings */}
-            <div className="mt-8 bg-gray-50 p-6 rounded-lg">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h3>
+            <motion.div 
+              whileHover={{ scale: 1.01 }}
+              className="mt-8 bg-gray-700 p-6 rounded-xl"
+            >
+              <h3 className="text-lg font-semibold text-gray-100 mb-4">Notification Settings</h3>
               <div className="space-y-6">
                 {/* Notification Toggle */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-50 rounded-lg">
-                      <BellRing className="w-5 h-5 text-blue-500" />
+                    <div className="p-2 bg-blue-500 bg-opacity-20 rounded-lg">
+                      <BellRing className="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
-                      <p className="font-medium text-gray-900">Notifications</p>
-                      <p className="text-sm text-gray-500">Receive notifications about updates</p>
+                      <p className="font-medium text-gray-100">Notifications</p>
+                      <p className="text-sm text-gray-400">Receive notifications about updates</p>
                     </div>
                   </div>
                   <button
                     onClick={handleNotificationToggle}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      data.is_notification_active ? 'bg-blue-500' : 'bg-gray-200'
+                      data.is_notification_active ? 'bg-blue-500' : 'bg-gray-600'
                     }`}
                   >
                     <span
@@ -348,15 +371,15 @@ function UserProfile() {
 
                 {/* Notification Duration */}
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-50 rounded-lg">
-                    <Bell className="w-5 h-5 text-blue-500" />
+                  <div className="p-2 bg-blue-500 bg-opacity-20 rounded-lg">
+                    <Bell className="w-5 h-5 text-blue-400" />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium text-gray-900 mb-2">Notification Duration</p>
+                    <p className="font-medium text-gray-100 mb-2">Notification Duration</p>
                     <select
                       value={data.notification_duration}
                       onChange={handleDurationChange}
-                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-100"
                     >
                       <option value="one_day">One Day</option>
                       <option value="seven_days">Seven Days</option>
@@ -365,7 +388,7 @@ function UserProfile() {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {/* Info Grid */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -399,31 +422,35 @@ function UserProfile() {
             {/* Links Section */}
             <div className="mt-8 flex flex-wrap gap-4">
               {data.product_url && (
-                <a
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   href={data.product_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-400 transition-colors"
                 >
                   <LinkIcon className="w-4 h-4" />
                   <span>Product URL</span>
-                </a>
+                </motion.a>
               )}
               {data.qrcode_image_url && (
-                <a
+                <motion.a
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   href={data.qrcode_image_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-blue-500 hover:text-blue-500 transition-colors"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg hover:border-blue-500 hover:text-blue-400 transition-colors"
                 >
                   <QrCode className="w-4 h-4" />
                   <span>QR Code</span>
-                </a>
+                </motion.a>
               )}
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
