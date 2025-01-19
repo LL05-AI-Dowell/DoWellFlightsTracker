@@ -11,7 +11,7 @@ services:
       - ./server:/usr/src/app
     restart: always
     networks:
-      - queue-net
+      - webnet
 
   client:
     build: ./client
@@ -25,14 +25,11 @@ services:
       - ./client:/usr/src/app
       - /usr/src/app/node_modules
     networks:
-      - queue-net
+      - webnet
     depends_on:
       - server
   
-
-
-
-
 networks:
-  queue-net:
-    driver: bridge
+  webnet:
+    external: true
+    name: webnet
