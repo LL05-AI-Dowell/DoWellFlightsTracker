@@ -20,6 +20,6 @@ from .views import *
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('dowellflightstracker/api/v1/', include('app.urls')),
-     path('dowellflightstracker/', HealthCheck.as_view()),
+    path('api/v1/', include('app.urls')),
+     path('', HealthCheck.as_view()),
 ]
