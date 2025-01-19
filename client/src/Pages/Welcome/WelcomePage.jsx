@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { getServerHealth } from "../../services/api.config";
 import { useNavigate } from "react-router-dom";
+import logo from "../../assets/logo.svg"
 
 const WelcomePage = () => {
   const [healthStatus, setHealthStatus] = useState({
@@ -45,7 +46,7 @@ const WelcomePage = () => {
             whileHover={{ scale: 1.05 }}
             className="w-20 h-20 mx-auto bg-blue-500 rounded-xl flex items-center justify-center"
           >
-            <img src="https://dowellfileuploader.uxlivinglab.online/hr/logo-2-min-min.png" alt="logo" />
+            <img src={logo} alt="logo" />
           </motion.div>
 
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
