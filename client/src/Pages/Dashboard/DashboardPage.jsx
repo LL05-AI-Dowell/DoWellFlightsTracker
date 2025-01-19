@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
-import { dashboardConfig } from "./dashBoardConfig";
 import { isTokenExpired } from '../../utils/utils';
+import { dashboardConfig } from './dashBoardconfig';
 
 const Dashboard = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
