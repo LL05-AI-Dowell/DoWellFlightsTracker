@@ -44,7 +44,7 @@ const WelcomePage = () => {
         >
           <motion.div
             whileHover={{ scale: 1.05 }}
-            className="w-20 h-20 mx-auto bg-blue-500 rounded-xl flex items-center justify-center"
+            className="w-20 h-20 mx-auto flex items-center justify-center"
           >
             <img src={logo} alt="logo" />
           </motion.div>
