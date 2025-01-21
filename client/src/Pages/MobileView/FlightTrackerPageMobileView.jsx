@@ -22,7 +22,7 @@ const FlightTrackerPageMobileView = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [authChecking, setAuthChecking] = useState(true);
   const [authError, setAuthError] = useState("");
-  const [isMobile, setIsMobile] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
 
   const {
     latitude,
@@ -56,9 +56,10 @@ const FlightTrackerPageMobileView = () => {
   };
 
   const checkIsMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
+    // return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    //   navigator.userAgent
+    // );
+    return true
   };
 
 
