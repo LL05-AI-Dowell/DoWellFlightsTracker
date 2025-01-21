@@ -44,6 +44,9 @@ class UserManagement(APIView):
         else:
             return self.handle_error(request)
         
+    def put(self, request):
+        return self.update_user_info(request)
+        
     def handle_error(self, request): 
         return Response({
             "success": False,
@@ -320,6 +323,52 @@ class UserManagement(APIView):
                 "success": False,
                 "message": "Something went wrong with your registration process, please contact us at dowell@dowellresearch.sg"
             }, status=status.HTTP_400_BAD_REQUEST)
+        
+    def update_user_info(self, request):
+        document_id = request.GET.get("document_id")
+        owner_id = request.GET.get("owner_id")
+        workspace_id = request.GET.get("workspace_id")
+
+        if not document_id or owner_id or workspace_id:
+            return Response({
+                "success": False,
+                "message": "Missing document_id or owner_id or workspace_id in the params"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        email = request.data.get("email"),
+        is_active = request.data.get("is_active"),
+        is_notification_active = request.data.get("is_notification_active"),
+        proximity = request.data.get("proximity"),
+        notification_duration = request.data.get("notification_duration")
+
+        
+        database = f"{owner_id}_dowell_flight_tracker"
+        collection = f"{owner_id}_users"
+
+        db_response = json.loads(datacube_data_update(
+                                                        api_key, 
+                                                        database, 
+                                                        collection, 
+                                                        {"_id":document_id}, 
+                                                        {
+                                                            "email": email,
+                                                            "is_active": is_active,
+                                                            "is_notification_active": is_notification_active,
+                                                            "proximity": proximity,
+                                                            "notification_duration": notification_duration     
+                                                        }
+                                                    ))
+        
+        if db_response["success"] == False:
+            return Response({
+                "success": False,
+                "message": db_response["message"]
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "success": True,
+            "message": db_response["message"]
+            }, status=status.HTTP_200_OK)
 
     @login_required
     def self_identification(self, request):
