@@ -326,48 +326,38 @@ class UserManagement(APIView):
         
     def update_user_info(self, request):
         document_id = request.GET.get("document_id")
-        owner_id = request.GET.get("owner_id")
         workspace_id = request.GET.get("workspace_id")
+        data = request.data.get("data")
 
-        if not document_id or owner_id or workspace_id:
+        print(data)
+
+        if not document_id  and workspace_id and not data:
             return Response({
                 "success": False,
                 "message": "Missing document_id or owner_id or workspace_id in the params"
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        email = request.data.get("email"),
-        is_active = request.data.get("is_active"),
-        is_notification_active = request.data.get("is_notification_active"),
-        proximity = request.data.get("proximity"),
-        notification_duration = request.data.get("notification_duration")
-
         
-        database = f"{owner_id}_dowell_flight_tracker"
-        collection = f"{owner_id}_users"
+        database = f"{workspace_id}_dowell_flight_tracker"
+        collection = f"{workspace_id}_users"
 
         db_response = json.loads(datacube_data_update(
-                                                        api_key, 
-                                                        database, 
-                                                        collection, 
-                                                        {"_id":document_id}, 
-                                                        {
-                                                            "email": email,
-                                                            "is_active": is_active,
-                                                            "is_notification_active": is_notification_active,
-                                                            "proximity": proximity,
-                                                            "notification_duration": notification_duration     
-                                                        }
-                                                    ))
+            api_key, 
+            database, 
+            collection, 
+            {"_id":document_id}, 
+            data
+        ))
         
         if db_response["success"] == False:
             return Response({
                 "success": False,
-                "message": db_response["message"]
+                "message": "Something went wrong updating the data"
                 }, status=status.HTTP_400_BAD_REQUEST)
 
         return Response({
             "success": True,
-            "message": db_response["message"]
+            "message": "User data updated successfully"
             }, status=status.HTTP_200_OK)
 
     @login_required

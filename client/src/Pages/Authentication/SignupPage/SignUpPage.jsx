@@ -1,29 +1,44 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signup } from "../../../services/api.config";
+import { toast } from "react-hot-toast";
 
 const SignUpPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     code: "",
+    productID: "",
     email: "",
     confirmEmail: "",
   });
 
   const [errors, setErrors] = useState({
     code: "",
+    productID: "",
     email: "",
     confirmEmail: "",
   });
+
+  const [loading, setLoading] = useState(false);
+  const [latitude, setLatitude] = useState(null);
+  const [longitude, setLongitude] = useState(null);
 
   const validateForm = () => {
     let isValid = true;
     const newErrors = {
       code: "",
+      productID: "",
       email: "",
       confirmEmail: "",
     };
 
     if (!formData.code.trim()) {
       newErrors.code = "Code is required";
+      isValid = false;
+    }
+
+    if (!formData.productID.trim()) {
+      newErrors.productID = "Product ID is required";
       isValid = false;
     }
 
@@ -48,14 +63,67 @@ const SignUpPage = () => {
     return isValid;
   };
 
-  const handleSubmit = (e) => {
+  const getCurrentLocation = () => {
+    setLoading(true);
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const currentLat = position.coords.latitude;
+          const currentLong = position.coords.longitude;
+
+          setLatitude(currentLat);
+          setLongitude(currentLong);
+          setLoading(false);
+        },
+        (err) => {
+          toast.error(`Error getting location: ${err.message}`);
+          setLoading(false);
+        }
+      );
+    } else {
+      toast.error("Geolocation is not supported by this browser.");
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    getCurrentLocation();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (validateForm()) {
-      console.log("Form submitted:", formData);
-      toast.success("Registration successful! Please check your email.");
+      if (latitude === null || longitude === null) {
+        toast.error("Please allow location access to proceed.");
+        return;
+      }
+
+      setLoading(true);
+
+      try {
+        const response = await signup({
+          ...formData,
+          latitude,
+          longitude,
+        });
+
+        if (response.success) {
+          toast.success(
+            "Account created successfully. Please check your email for further instructions."
+          );
+          navigate("/signin")
+        } else {
+          toast.error(response.message);
+        }
+      } catch (error) {
+        toast.error(error.response.data.message);
+        
+      } finally {
+        setLoading(false);
+      }
     } else {
-      toast.error("Please fix the errors in the form");
+      toast.error("Please fix the errors in the form.");
     }
   };
 
@@ -83,8 +151,7 @@ const SignUpPage = () => {
             alt=""
           />
         </div>
-       
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <input
@@ -99,6 +166,22 @@ const SignUpPage = () => {
             />
             {errors.code && (
               <p className="text-red-500 text-sm mt-1">{errors.code}</p>
+            )}
+          </div>
+
+          <div>
+            <input
+              type="text"
+              name="productID"
+              placeholder="Enter the PRODUCT ID shown below your QR code in the sticker"
+              value={formData.productID}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 rounded-lg border ${
+                errors.productID ? "border-red-500" : "border-gray-300"
+              } focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+            {errors.productID && (
+              <p className="text-red-500 text-sm mt-1">{errors.productID}</p>
             )}
           </div>
 
@@ -137,8 +220,9 @@ const SignUpPage = () => {
           <button
             type="submit"
             className="w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={loading}
           >
-            Submit then check your mail for credentials
+            {loading ? "Submitting..." : "Submit and Check Email"}
           </button>
 
           <div className="grid grid-cols-2 gap-4">

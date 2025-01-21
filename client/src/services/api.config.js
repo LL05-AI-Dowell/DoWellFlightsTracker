@@ -64,3 +64,24 @@ export const checkProximity = async (data) => {
   );
   return response.data;
 }
+
+export const updateData = async (document_id,workspace_id,data) => {
+  const response = await servicesAxiosInstance.put(
+    `/api/v1/auth/?document_id=${document_id}&workspace_id=${workspace_id}`,
+    {data: data}
+  );
+  return response.data;
+};
+
+export const signup = async(data) => {
+  console.log(data);
+  
+  const response = await servicesAxiosInstance.post('/api/v1/auth/?type=signup', {
+    workspace_name:data.productID,
+    user_id:data.code,
+    email:data.email,
+    latitude:data.latitude,
+    longitude:data.longitude
+})
+  return response.data
+}

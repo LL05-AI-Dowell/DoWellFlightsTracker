@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import { 
@@ -18,7 +19,8 @@ import {
   XCircle,
 } from 'lucide-react';
 import { decodeJWT } from '../../utils/utils';
-import { selfidentification } from '../../services/api.config';
+import { selfidentification, updateData } from '../../services/api.config';
+import { toast } from 'react-hot-toast';
 
 function UserProfile() {
   const [data, setData] = useState(null);
@@ -89,16 +91,32 @@ function UserProfile() {
     </motion.div>
   );
 
+  console.log(data.workspace_id);
+  
+
   const handleEmailSave = async () => {
     try {
-      // Here you would typically make an API call to update the email
       setData(prev => ({ ...prev, email: emailValue }));
-      setIsEditingEmail(false);
+      const email = await updateData(
+        data._id,
+        data.workspace_id, 
+        {
+          email: emailValue,
+        }
+      )
+      if(email.success){
+        toast.success("Email updated successfully")
+        setIsEditingEmail(false);
+      } else {
+        toast.error("Failed to update email")
+      }
     } catch (error) {
       console.error('Error updating email:', error);
-      // Handle error appropriately
     }
   };
+
+  console.log(data);
+  
 
   const handleEmailCancel = () => {
     setEmailValue(data.email);
@@ -111,9 +129,21 @@ function UserProfile() {
       if (isNaN(proximityNum)) {
         throw new Error('Invalid proximity value');
       }
-      // Here you would typically make an API call to update the proximity
       setData(prev => ({ ...prev, proximity: proximityNum }));
-      setIsEditingProximity(false);
+      const email = await updateData(
+        data._id,
+        data.workspace_id, 
+        {
+          proximity: proximityValue,
+        }
+      )
+      if(email.success){
+        toast.success("Proximity updated successfully")
+        setIsEditingProximity(false);
+      } else {
+        toast.error("Failed to update proximity")
+      }
+      
     } catch (error) {
       console.error('Error updating proximity:', error);
       // Handle error appropriately
@@ -132,13 +162,10 @@ function UserProfile() {
         const reader = new FileReader();
         reader.onloadend = () => {
           setPreviewImage(reader.result);
-          // Here you would typically make an API call to upload the image
-          // and update the profile_image URL in the data state
         };
         reader.readAsDataURL(file);
       } catch (error) {
         console.error('Error uploading image:', error);
-        // Handle error appropriately
       }
     }
   };
@@ -158,14 +185,12 @@ function UserProfile() {
 
   const handleDurationChange = async (event) => {
     try {
-      // Here you would typically make an API call to update the notification duration
       setData(prev => ({
         ...prev,
         notification_duration: event.target.value
       }));
     } catch (error) {
       console.error('Error updating notification duration:', error);
-      // Handle error appropriately
     }
   };
 
