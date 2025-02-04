@@ -17,3 +17,8 @@ class CheckProximitySerializer(serializers.Serializer):
     user_id = serializers.CharField()
     workspace_id = serializers.CharField()
     location_list = serializers.ListField()
+
+class SaveUserSearchSerializer(serializers.Serializer):
+    workspace_id = serializers.CharField()
+    user_id = serializers.CharField()
+    public_id = serializers.CharField()

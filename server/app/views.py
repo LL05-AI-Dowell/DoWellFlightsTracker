@@ -406,8 +406,11 @@ class flight_data(APIView):
             return self.get_flights_arrival_departure(request)
         elif type_request == "check_proximity":
             return self.check_proximity(request)
+        elif type_request == "save_user_search":
+            return self.save_user_search(request)
         else:
             return self.handle_error(request)
+        
     def get(self, request):
         type_request = request.GET.get('type')
 
@@ -577,6 +580,85 @@ class flight_data(APIView):
                 "response": api_response
             }, status=status.HTTP_401_UNAUTHORIZED)
 
+    def save_user_search(self, request):
+        workspace_id = request.GET.get("workspace_id")
+        user_id = request.GET.get("user_id")
+        public_id = request.GET.get("public_id")
+        user_search_data = request.data.get("search_data")
+        
+        serializer = SaveUserSearchSerializer(data = {
+            "workspace_id": workspace_id,
+            "user_id": user_id,
+            "public_id": public_id
+        })
+
+        if not serializer.is_valid():
+            return Response({
+                "success": False,
+                "message": "Posting invalid params",
+                "error": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        # Check if public_id exists
+        public_user = json.loads(datacube_data_retrieval(
+            api_key,
+            f"{workspace_id}_dowell_flight_tracker",
+            f"{workspace_id}_scan_log",
+            {
+                "workspace_id": workspace_id,
+                "user_id": user_id,
+                "public_id": public_id
+            },
+            0, 
+            0, 
+            False
+        ))
+        
+        existing_user_data = public_user.get('data', [])
+        print(f"existing_user_data: {existing_user_data}")
+
+        # create public user data if it does not exist 
+        if not existing_user_data:
+            public_user_data = {
+                "workspace_id": workspace_id,
+                "user_id": user_id,
+                "public_id":public_id,
+                "search_data": user_search_data
+            }
+            user_data_response = json.loads(datacube_data_insertion(
+                api_key,
+                f"{workspace_id}_dowell_flight_tracker",
+                f"{workspace_id}_scan_log",
+                public_user_data
+            ))
+
+            if not user_data_response.get("success"):
+                return Response({
+                    "success": False,
+                    "message": "Failed to create public user"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        # else update the existing data
+        response = json.loads(datacube_data_update(
+            api_key,
+            f"{workspace_id}_dowell_flight_tracker",
+            f"{workspace_id}_scan_log",
+            {"workspace_id": workspace_id},
+            user_search_data
+        ))
+        print(f"response: {response}")
+        
+        if not response.get("success"):
+            return Response({
+                "success": False,
+                "message": "Something went wrong while updating the data"
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({
+            "success": True,
+            "message": "Successfully saved the latest search data",
+            "search_query":user_search_data
+            }, status=status.HTTP_200_OK)
                     
 
     def handle_error(self, request): 
